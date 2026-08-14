@@ -53,7 +53,7 @@
   .wrap{
     max-width:var(--maxw);
     margin:0 auto;
-    padding:0 24px;
+    padding:0 18px;
   }
 
   /* ---------- Header ---------- */
@@ -86,12 +86,12 @@
 
   /* ---------- Hero ---------- */
   .hero{
-    padding:64px 0 88px;
+    padding:44px 0 60px;
   }
   .hero .wrap{
     display:grid;
-    grid-template-columns:1.1fr 0.9fr;
-    gap:48px;
+    grid-template-columns:1fr;
+    gap:32px;
     align-items:center;
   }
   .eyebrow{
@@ -149,11 +149,12 @@
   .hero-visual{
     position:relative;
     aspect-ratio:1/1;
-    max-width:380px;
+    max-width:240px;
     margin:0 auto;
     display:flex;
     align-items:center;
     justify-content:center;
+    order:-1;
   }
   .blob{
     position:absolute;
@@ -169,7 +170,7 @@
   }
 
   /* ---------- Section shell ---------- */
-  section{padding:72px 0;}
+  section{padding:56px 0;}
   .section-alt{background:var(--bg-alt);}
   .section-head{
     text-align:center;
@@ -210,8 +211,8 @@
   /* ---------- Values ---------- */
   .value-grid{
     display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:20px;
+    grid-template-columns:1fr;
+    gap:16px;
   }
   .value-card{
     background:var(--bg);
@@ -243,8 +244,8 @@
   /* ---------- Features ---------- */
   .feature-grid{
     display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:18px;
+    grid-template-columns:1fr;
+    gap:14px;
   }
   .feature-card{
     background:var(--neutral);
@@ -273,8 +274,8 @@
   .cta-box{
     background:var(--text);
     color:#fff;
-    border-radius:28px;
-    padding:56px 40px;
+    border-radius:22px;
+    padding:40px 22px;
     text-align:center;
   }
   .cta-box h2{
@@ -290,6 +291,7 @@
   }
   form.signup{
     display:flex;
+    flex-direction:column;
     gap:10px;
     max-width:420px;
     margin:0 auto;
@@ -396,8 +398,8 @@
   }
   footer.site .wrap{
     display:flex;
-    align-items:center;
-    justify-content:space-between;
+    flex-direction:column;
+    align-items:flex-start;
     flex-wrap:wrap;
     gap:14px;
   }
@@ -427,21 +429,26 @@
   }
 
   /* ---------- Responsive ---------- */
-  @media (max-width:860px){
-    .hero .wrap{grid-template-columns:1fr; gap:40px;}
-    .hero-visual{order:-1; max-width:240px;}
-    .value-grid{grid-template-columns:1fr 1fr;}
-    .feature-grid{grid-template-columns:1fr 1fr;}
+  /* Base styles above are mobile-first (down to a 345px reference width). */
+
+  /* 태블릿 (768px~) */
+  @media (min-width:768px){
+    .wrap{padding:0 24px;}
+    .hero{padding:64px 0 88px;}
+    .hero .wrap{grid-template-columns:1.1fr 0.9fr; gap:48px;}
+    .hero-visual{order:0; max-width:320px;}
+    section{padding:72px 0;}
+    .value-grid{grid-template-columns:repeat(3,1fr); gap:20px;}
+    .feature-grid{grid-template-columns:repeat(2,1fr); gap:18px;}
+    .cta-box{padding:56px 40px; border-radius:28px;}
+    form.signup{flex-direction:row;}
+    footer.site .wrap{flex-direction:row; align-items:center; justify-content:space-between;}
   }
-  @media (max-width:600px){
-    .wrap{padding:0 18px;}
-    .hero{padding:44px 0 60px;}
-    section{padding:56px 0;}
-    .value-grid{grid-template-columns:1fr;}
-    .feature-grid{grid-template-columns:1fr;}
-    .cta-box{padding:40px 22px; border-radius:22px;}
-    form.signup{flex-direction:column;}
-    footer.site .wrap{flex-direction:column; align-items:flex-start;}
+
+  /* 데스크탑 (1440px~) */
+  @media (min-width:1440px){
+    .hero-visual{max-width:380px;}
+    .feature-grid{grid-template-columns:repeat(3,1fr); gap:20px;}
   }
 </style>
 </head>
