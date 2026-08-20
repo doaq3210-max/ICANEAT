@@ -47,3 +47,9 @@ CTA 폼은 의도적으로 서버 연동이 없습니다 — 프론트엔드 전
  - 태블릿(768)
  - 데스크탑(1440)
  - 으로 브레이크포인트 설정
+
+## 맛집 검색 (`restaurants.html` + `proxy-server.js`)
+
+`restaurants.html`은 키워드/카테고리로 카카오 로컬 API를 검색해 결과를 카드로 보여주는 별도 페이지입니다(인라인 CSS+JS, `index.html`의 디자인 토큰을 재사용). 카카오 로컬 API는 서버사이드 호출 전제라 브라우저에서 직접 fetch하면 CORS로 막히므로, 순수 Node 내장 모듈만 사용한 최소 프록시 `proxy-server.js`(포트 8787, `/api/search`)를 거칩니다. REST API 키는 코드에 하드코딩하지 않고 `KAKAO_REST_API_KEY` 환경변수로 읽습니다.
+
+실행: `$env:KAKAO_REST_API_KEY="<REST API KEY>"; node proxy-server.js`로 프록시를 띄운 뒤, 기존 방식대로 `npx --yes serve -l 8765 .`로 정적 서버를 띄워 `http://localhost:8765/restaurants.html`을 엽니다.
