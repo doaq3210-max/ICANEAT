@@ -316,15 +316,29 @@
     border-color:var(--accent);
   }
 
-  /* ---------- Review panel ---------- */
+  /* ---------- Review modal ---------- */
+  .review-modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(43,43,46,0.45);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:100;
+  }
+  .review-modal-overlay.open{
+    display:flex;
+  }
   .review-panel{
-    margin-top:28px;
+    width:100%;
+    max-width:560px;
+    max-height:85vh;
+    overflow-y:auto;
     border:1px solid var(--neutral-border);
     border-radius:var(--radius-lg);
     background:var(--bg-alt);
-    overflow:hidden;
-    max-height:0;
-    transition:max-height .3s ease;
+    box-shadow:var(--shadow-card-hover);
   }
   .review-panel-body{
     padding:24px;
@@ -402,6 +416,17 @@
     font-size:0.88rem;
     color:var(--text);
   }
+  .review-text-toggle{
+    margin-top:4px;
+    padding:0;
+    border:none;
+    background:none;
+    font-size:0.82rem;
+    font-weight:600;
+    color:var(--accent-strong);
+    cursor:pointer;
+  }
+  .review-text-toggle:hover{opacity:.75;}
   .review-panel-link{
     display:inline-block;
     margin-top:18px;
@@ -554,8 +579,10 @@
       <button type="button" class="load-more-btn" id="loadMoreBtn" hidden>더 보기</button>
     </div>
 
-    <div class="review-panel" id="reviewPanel">
-      <div class="review-panel-body" id="reviewPanelBody"></div>
+    <div class="review-modal-overlay" id="reviewModalOverlay">
+      <div class="review-panel" id="reviewPanel">
+        <div class="review-panel-body" id="reviewPanelBody"></div>
+      </div>
     </div>
   </section>
 </main>
@@ -580,6 +607,7 @@
   var AI_ANALYZE_BASE = '/api/ai-analyze';
   var REVIEW_CACHE_PREFIX = 'icaneat:reviews:';
   var AI_CACHE_PREFIX = 'icaneat:ai:';
+  var REVIEW_TEXT_TRUNCATE_LEN = 130;
   var SEOUL_CITY_HALL = { lat: 37.532600, lng: 127.024612 };
   var RADIUS_M = 20000;
   var PAGE_SIZE = 15;
@@ -724,29 +752,36 @@
     return card;
   }
 
+  var reviewModalOverlay = document.getElementById('reviewModalOverlay');
   var reviewPanel = document.getElementById('reviewPanel');
   var reviewPanelBody = document.getElementById('reviewPanelBody');
   var activeReviewCard = null;
 
-  function syncPanelHeight() {
-    if (reviewPanel.classList.contains('open')) {
-      reviewPanel.style.maxHeight = reviewPanel.scrollHeight + 'px';
-    }
+  function isPanelOpen() {
+    return reviewModalOverlay.classList.contains('open');
   }
 
   function openPanel() {
-    reviewPanel.classList.add('open');
-    syncPanelHeight();
+    reviewModalOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
 
   function closePanel() {
-    reviewPanel.classList.remove('open');
-    reviewPanel.style.maxHeight = null;
+    reviewModalOverlay.classList.remove('open');
+    document.body.style.overflow = '';
     if (activeReviewCard) {
       activeReviewCard.classList.remove('is-active-review');
       activeReviewCard = null;
     }
   }
+
+  reviewModalOverlay.addEventListener('click', function (e) {
+    if (e.target === reviewModalOverlay) closePanel();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && isPanelOpen()) closePanel();
+  });
 
   function buildCacheKey(card, prefix) {
     var id = card.dataset.placeId;
@@ -808,7 +843,6 @@
     status.className = 'review-panel-status';
     status.textContent = '리뷰를 불러오는 중...';
     reviewPanelBody.appendChild(status);
-    syncPanelHeight();
   }
 
   function renderPanelNotFound(name) {
@@ -818,7 +852,6 @@
     status.className = 'review-panel-status';
     status.textContent = '리뷰를 찾을 수 없어요.';
     reviewPanelBody.appendChild(status);
-    syncPanelHeight();
   }
 
   function renderPanelError(name) {
@@ -828,7 +861,6 @@
     status.className = 'review-panel-status review-panel-status--error';
     status.textContent = '리뷰를 불러오지 못했어요. 잠시 후 다시 시도해주세요.';
     reviewPanelBody.appendChild(status);
-    syncPanelHeight();
   }
 
   function renderPanelResult(card, data) {
@@ -869,8 +901,27 @@
 
       var text = document.createElement('p');
       text.className = 'review-item-text';
-      text.textContent = r.text || '';
+      var fullText = r.text || '';
       li.appendChild(text);
+
+      if (fullText.length > REVIEW_TEXT_TRUNCATE_LEN) {
+        var truncated = fullText.slice(0, REVIEW_TEXT_TRUNCATE_LEN) + '…';
+        text.textContent = truncated;
+
+        var toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'review-text-toggle';
+        toggle.textContent = '더보기';
+        var expanded = false;
+        toggle.addEventListener('click', function () {
+          expanded = !expanded;
+          text.textContent = expanded ? fullText : truncated;
+          toggle.textContent = expanded ? '접기' : '더보기';
+        });
+        li.appendChild(toggle);
+      } else {
+        text.textContent = fullText;
+      }
 
       list.appendChild(li);
     });
@@ -893,8 +944,6 @@
       link.textContent = '구글 지도에서 전체 리뷰 보기 →';
       reviewPanelBody.appendChild(link);
     }
-
-    syncPanelHeight();
   }
 
   function buildAiSection() {
@@ -919,7 +968,6 @@
     status.className = 'review-panel-status';
     status.textContent = 'AI가 분석하는 중...';
     refs.body.appendChild(status);
-    syncPanelHeight();
   }
 
   function renderAiError(refs) {
@@ -928,7 +976,6 @@
     status.className = 'review-panel-status review-panel-status--error';
     status.textContent = 'AI 분석을 불러오지 못했어요.';
     refs.body.appendChild(status);
-    syncPanelHeight();
   }
 
   function renderAiResult(refs, result) {
@@ -1007,8 +1054,6 @@
       bubble.appendChild(document.createTextNode(result.summary));
       refs.body.appendChild(bubble);
     }
-
-    syncPanelHeight();
   }
 
   function runAiAnalysis(card, data, refs) {
@@ -1167,7 +1212,7 @@
     var card = e.target.closest('.rest-card');
     if (!card) return;
 
-    if (activeReviewCard === card && reviewPanel.classList.contains('open')) {
+    if (activeReviewCard === card && isPanelOpen()) {
       closePanel();
       return;
     }
