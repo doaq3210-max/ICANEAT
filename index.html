@@ -126,22 +126,6 @@
     align-items:center;
     flex-wrap:wrap;
   }
-  .btn-primary{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:14px 26px;
-    border-radius:999px;
-    background:var(--accent-strong);
-    color:#fff;
-    font-weight:700;
-    font-size:0.95rem;
-    text-decoration:none;
-    border:none;
-    cursor:pointer;
-    transition:transform .18s ease, opacity .18s ease;
-  }
-  .btn-primary:hover{transform:translateY(-1px); opacity:.92;}
   .btn-ghost{
     font-size:0.9rem;
     font-weight:600;
@@ -175,30 +159,6 @@
   /* ---------- Section shell ---------- */
   section{padding:56px 0;}
   .section-alt{background:var(--bg-alt);}
-  .section-head{
-    text-align:center;
-    max-width:560px;
-    margin:0 auto 48px;
-  }
-  .section-head .tag{
-    font-size:0.8rem;
-    font-weight:700;
-    color:var(--accent-strong);
-    text-transform:uppercase;
-    letter-spacing:0.06em;
-    margin-bottom:10px;
-    display:block;
-  }
-  .section-head h2{
-    font-size:clamp(1.5rem,3vw,2rem);
-    font-weight:700;
-    letter-spacing:-0.02em;
-    margin:0 0 12px;
-  }
-  .section-head p{
-    color:var(--text-soft);
-    margin:0;
-  }
 
   /* ---------- Reveal animation ---------- */
   .reveal{
@@ -209,91 +169,6 @@
   .reveal.is-visible{
     opacity:1;
     transform:translateY(0);
-  }
-
-  /* ---------- Values ---------- */
-  .value-grid{
-    display:grid;
-    grid-template-columns:1fr;
-    gap:20px;
-  }
-  .value-card{
-    background:var(--bg);
-    border:1px solid var(--neutral-border);
-    border-radius:var(--radius-lg);
-    overflow:hidden;
-    text-align:left;
-    box-shadow:var(--shadow-card);
-    transition:transform .22s ease, box-shadow .22s ease;
-  }
-  .value-card:hover{
-    transform:translateY(-4px);
-    box-shadow:var(--shadow-card-hover);
-  }
-  .value-card .icon-frame{
-    aspect-ratio:16/9;
-    background:var(--accent-soft);
-    display:flex;align-items:center;justify-content:center;
-    transition:background .6s ease;
-  }
-  .value-card .icon-frame .icon{
-    font-size:2.2rem;
-  }
-  .value-card .card-body{
-    padding:22px 22px 26px;
-  }
-  .value-card h3{
-    font-size:1.05rem;
-    font-weight:700;
-    margin:0 0 8px;
-    letter-spacing:-0.01em;
-  }
-  .value-card p{
-    margin:0;
-    font-size:0.92rem;
-    color:var(--text-soft);
-  }
-
-  /* ---------- Features ---------- */
-  .feature-grid{
-    display:grid;
-    grid-template-columns:1fr;
-    gap:18px;
-  }
-  .feature-card{
-    background:var(--bg);
-    border:1px solid var(--neutral-border);
-    border-radius:var(--radius-md);
-    overflow:hidden;
-    box-shadow:var(--shadow-card);
-    transition:transform .22s ease, box-shadow .22s ease;
-  }
-  .feature-card:hover{
-    transform:translateY(-3px);
-    box-shadow:var(--shadow-card-hover);
-  }
-  .feature-card .icon-frame{
-    aspect-ratio:4/3;
-    background:var(--neutral);
-    display:flex;align-items:center;justify-content:center;
-    transition:background .3s ease;
-  }
-  .feature-card:hover .icon-frame{background:var(--accent-soft);}
-  .feature-card .icon-frame .icon{
-    font-size:1.9rem;
-  }
-  .feature-card .card-body{
-    padding:18px 20px 22px;
-  }
-  .feature-card h3{
-    font-size:0.98rem;
-    font-weight:700;
-    margin:0 0 6px;
-  }
-  .feature-card p{
-    margin:0;
-    font-size:0.86rem;
-    color:var(--text-soft);
   }
 
   /* ---------- CTA ---------- */
@@ -353,59 +228,6 @@
   }
   form.signup button:hover{opacity:.9; transform:translateY(-1px);}
 
-  /* ---------- FAQ ---------- */
-  .faq-list{
-    max-width:680px;
-    margin:0 auto;
-    border-top:1px solid var(--neutral-border);
-  }
-  .faq-item{
-    border-bottom:1px solid var(--neutral-border);
-  }
-  .faq-q{
-    width:100%;
-    text-align:left;
-    background:none;
-    border:none;
-    padding:22px 4px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:16px;
-    font-size:0.98rem;
-    font-weight:600;
-    color:var(--text);
-    cursor:pointer;
-    transition:color .18s ease;
-  }
-  .faq-q:hover{color:var(--accent-strong);}
-  .faq-q .plus{
-    flex:none;
-    width:22px;height:22px;
-    display:flex;align-items:center;justify-content:center;
-    border-radius:50%;
-    background:var(--neutral);
-    font-size:1rem;
-    color:var(--text-soft);
-    transition:transform .25s ease, background .25s ease;
-  }
-  .faq-item.open .faq-q .plus{
-    transform:rotate(45deg);
-    background:var(--accent-soft);
-    color:var(--accent-strong);
-  }
-  .faq-a{
-    max-height:0;
-    overflow:hidden;
-    transition:max-height .3s ease;
-  }
-  .faq-a p{
-    margin:0 4px 22px;
-    color:var(--text-soft);
-    font-size:0.92rem;
-    max-width:560px;
-  }
-
   /* ---------- Footer ---------- */
   footer.site{
     border-top:1px solid var(--neutral-border);
@@ -453,9 +275,6 @@
     .hero .wrap{grid-template-columns:1.1fr 0.9fr; gap:48px;}
     .hero-visual{order:0; max-width:320px;}
     section{padding:80px 0;}
-    .section-head{margin-bottom:56px;}
-    .value-grid{grid-template-columns:repeat(3,1fr); gap:24px;}
-    .feature-grid{grid-template-columns:repeat(2,1fr); gap:22px;}
     .cta-box{padding:56px 40px; border-radius:28px;}
     form.signup{flex-direction:row;}
     footer.site .wrap{flex-direction:row; align-items:center; justify-content:space-between;}
@@ -464,7 +283,6 @@
   /* 데스크탑 (1440px~) */
   @media (min-width:1440px){
     .hero-visual{max-width:380px;}
-    .feature-grid{grid-template-columns:repeat(3,1fr); gap:24px;}
   }
 </style>
 </head>
@@ -473,7 +291,7 @@
 <header class="site">
   <div class="wrap">
     <div class="logo">I can<span> eat</span></div>
-    <a class="nav-cta" href="#signup">사전 신청</a>
+    <a class="nav-cta" href="about.html">about</a>
   </div>
 </header>
 
@@ -484,8 +302,7 @@
       <h1>가볍고 빠르게,<br>오늘 뭐 먹지</h1>
       <p class="lead">즉흥적으로 갈 곳을 정할 때도, 약속 전 미리 찾아볼 때도, 여행 중 낯선 동네에서도 — I can eat이 가장 빠른 답을 드립니다.</p>
       <div class="hero-actions">
-        <a class="btn-primary" href="#signup">사전 신청하기 →</a>
-        <a class="btn-ghost" href="#features">기능 미리보기</a>
+        <a class="btn-ghost" href="about.html#features">기능 미리보기</a>
       </div>
     </div>
     <div class="hero-visual">
@@ -495,94 +312,7 @@
   </div>
 </section>
 
-<section class="section-alt">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <span class="tag">Why I can eat</span>
-      <h2>단순하지만, 계속 열어보고 싶게</h2>
-      <p>복잡한 기능을 나열하는 대신, 꼭 필요한 것만 가볍게 담았어요.</p>
-    </div>
-    <div class="value-grid">
-      <div class="value-card reveal">
-        <div class="icon-frame"><span class="icon">⚡</span></div>
-        <div class="card-body">
-          <h3>빠르다</h3>
-          <p>고민 없이 바로 여는 화면, 3초 안에 오늘 갈 곳을 찾아요.</p>
-        </div>
-      </div>
-      <div class="value-card reveal">
-        <div class="icon-frame"><span class="icon">🍃</span></div>
-        <div class="card-body">
-          <h3>가볍다</h3>
-          <p>불필요한 기능은 덜어내고, 꼭 필요한 흐름만 남겼어요.</p>
-        </div>
-      </div>
-      <div class="value-card reveal">
-        <div class="icon-frame"><span class="icon">🤍</span></div>
-        <div class="card-body">
-          <h3>편리하다</h3>
-          <p>누구에게나 헷갈리지 않는, 쉽고 직관적인 사용성.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="features">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <span class="tag">Coming soon</span>
-      <h2>이런 기능을 준비하고 있어요</h2>
-      <p>정식 출시와 함께 순차적으로 만나보실 수 있어요.</p>
-    </div>
-    <div class="feature-grid">
-      <div class="feature-card reveal">
-        <div class="icon-frame"><span class="icon">🔍</span></div>
-        <div class="card-body">
-          <h3>맛집 검색</h3>
-          <p>키워드 하나로 원하는 맛집을 바로 찾아요.</p>
-        </div>
-      </div>
-      <div class="feature-card reveal">
-        <div class="icon-frame"><span class="icon">🗺️</span></div>
-        <div class="card-body">
-          <h3>지도 기반 탐색</h3>
-          <p>지도 위에서 주변 맛집을 한눈에 둘러봐요.</p>
-        </div>
-      </div>
-      <div class="feature-card reveal">
-        <div class="icon-frame"><span class="icon">🎲</span></div>
-        <div class="card-body">
-          <h3>오늘 뭐 먹지 룰렛</h3>
-          <p>고민될 땐 조건 내 랜덤 추천으로 바로 결정.</p>
-        </div>
-      </div>
-      <div class="feature-card reveal">
-        <div class="icon-frame"><span class="icon">✨</span></div>
-        <div class="card-body">
-          <h3>AI 리뷰 요약</h3>
-          <p>수많은 리뷰를 AI가 한눈에 보기 좋게 요약해요.</p>
-        </div>
-      </div>
-      <div class="feature-card reveal">
-        <div class="icon-frame"><span class="icon">⭐</span></div>
-        <div class="card-body">
-          <h3>리뷰 · 평점</h3>
-          <p>직접 남기고, 다른 사람의 솔직한 후기도 확인해요.</p>
-        </div>
-      </div>
-      <div class="feature-card reveal">
-        <div class="icon-frame"><span class="icon">📊</span></div>
-        <div class="card-body">
-          <h3>취향 대시보드</h3>
-          <p>내 방문 기록을 한눈에 시각화해서 보여줘요.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section-alt" id="signup">
+<section class="section-alt" id="search">
   <div class="wrap">
     <div class="cta-box reveal">
       <h2>지금 맛집을 검색해보세요</h2>
@@ -591,45 +321,6 @@
         <input type="text" id="searchInput" placeholder="먹고 싶은 메뉴나 지역을 입력해보세요" autocomplete="off">
         <button type="submit">검색하러 가기</button>
       </form>
-    </div>
-  </div>
-</section>
-
-<section id="faq">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <span class="tag">FAQ</span>
-      <h2>자주 묻는 질문</h2>
-    </div>
-    <div class="faq-list reveal">
-      <div class="faq-item">
-        <button class="faq-q">
-          <span>I can eat은 언제 출시되나요?</span>
-          <span class="plus">+</span>
-        </button>
-        <div class="faq-a"><p>사전 신청해 주신 분들께 가장 먼저 출시 소식을 알려드릴 예정이에요.</p></div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q">
-          <span>어떤 지역 맛집을 볼 수 있나요?</span>
-          <span class="plus">+</span>
-        </button>
-        <div class="faq-a"><p>전국 맛집 정보를 목표로, 정식 출시 이후 순차적으로 지역을 넓혀갈 계획이에요.</p></div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q">
-          <span>리뷰는 아무나 남길 수 있나요?</span>
-          <span class="plus">+</span>
-        </button>
-        <div class="faq-a"><p>회원이라면 누구나 자유롭게 리뷰와 평점을 남기고 확인할 수 있어요.</p></div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q">
-          <span>외국인 여행객도 이용할 수 있나요?</span>
-          <span class="plus">+</span>
-        </button>
-        <div class="faq-a"><p>추후 영어 지원을 추가해, 국내를 여행하는 외국인 분들도 편하게 이용하실 수 있도록 준비 중이에요.</p></div>
-      </div>
     </div>
   </div>
 </section>
@@ -656,27 +347,6 @@
     var isLunch = hour >= 6 && hour < 17;
     document.documentElement.setAttribute('data-daypart', isLunch ? 'lunch' : 'dinner');
   })();
-
-  document.querySelectorAll('.faq-item').forEach(function(item){
-    var q = item.querySelector('.faq-q');
-    var a = item.querySelector('.faq-a');
-    q.addEventListener('click', function(){
-      var isOpen = item.classList.contains('open');
-      document.querySelectorAll('.faq-item.open').forEach(function(openItem){
-        if(openItem !== item){
-          openItem.classList.remove('open');
-          openItem.querySelector('.faq-a').style.maxHeight = null;
-        }
-      });
-      if(isOpen){
-        item.classList.remove('open');
-        a.style.maxHeight = null;
-      } else {
-        item.classList.add('open');
-        a.style.maxHeight = a.scrollHeight + 'px';
-      }
-    });
-  });
 
   var searchForm = document.getElementById('searchForm');
   var searchInput = document.getElementById('searchInput');
