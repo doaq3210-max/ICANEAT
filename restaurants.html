@@ -7,7 +7,9 @@
 <meta name="description" content="키워드나 카테고리로 주변 맛집/카페를 검색합니다.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍚</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="auth.css">
 <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   /* index.html과 동일한 디자인 토큰을 그대로 재사용 (index.html은 수정하지 않음) */
   :root{
@@ -79,6 +81,11 @@
   .page-title{
     font-size:0.85rem;
     color:var(--text-soft);
+  }
+  .header-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
   }
 
   /* ---------- Search section ---------- */
@@ -544,7 +551,10 @@
 <header class="site">
   <div class="wrap">
     <a class="logo" href="index.html">I can <span>eat</span></a>
-    <span class="page-title">맛집 검색 (베타)</span>
+    <div class="header-actions">
+      <span class="page-title">맛집 검색 (베타)</span>
+      <div id="authSlot"></div>
+    </div>
   </div>
 </header>
 
@@ -591,6 +601,7 @@
   <div class="wrap">I can eat — 맛집 검색은 카카오 로컬 API 데이터를 사용합니다.</div>
 </footer>
 
+<script src="auth.js"></script>
 <script>
 (function(){
   // index.html과 동일한 시간대별 액센트 전환 로직 (이 페이지는 별도 파일이라 자체적으로 적용 필요)
@@ -1189,14 +1200,17 @@
   });
 
   // "담기" 버튼: 카드가 검색/더보기로 계속 새로 추가되므로 restGrid에 이벤트 위임.
-  // 오늘 스코프에서는 실제 저장(localStorage/서버) 없이 UI 상태 토글만 수행하며,
-  // 새로고침하거나 다시 검색하면 초기화된다.
+  // 로그인한 회원만 사용 가능(비로그인 시 로그인 모달만 열림, auth.js의
+  // icaneatAuth.requireLogin() 참고). 오늘 스코프에서는 실제 저장(localStorage/서버)
+  // 없이 UI 상태 토글만 수행하며, 새로고침하거나 다시 검색하면 초기화된다.
   restGrid.addEventListener('click', function (e) {
     var saveBtn = e.target.closest('.rest-card-save');
     if (!saveBtn) return;
 
     e.preventDefault();
     e.stopPropagation();
+
+    if (!window.icaneatAuth.requireLogin()) return;
 
     var isSaved = saveBtn.classList.toggle('is-saved');
     saveBtn.textContent = isSaved ? '담았어요' : '담기';

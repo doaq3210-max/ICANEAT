@@ -1,0 +1,168 @@
+/* auth.css — index.html / about.html / restaurants.html 공용 로그인 UI 스타일.
+   기존 :root 디자인 토큰만 재사용 (새 브랜드 컬러 없음). */
+
+.auth-login-btn {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+.auth-login-btn:hover {
+  opacity: 0.8;
+}
+
+.auth-user-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+.auth-user-status .auth-user-name {
+  color: var(--text);
+  font-weight: 600;
+}
+.auth-logout-btn {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--neutral-border);
+  background: var(--bg);
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.auth-logout-btn:hover {
+  background: var(--neutral);
+  color: var(--text);
+}
+
+.auth-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 43, 46, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 200;
+}
+.auth-modal-overlay.open {
+  display: flex;
+}
+.auth-modal {
+  width: 100%;
+  max-width: 380px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border: 1px solid var(--neutral-border);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+  box-shadow: var(--shadow-card-hover);
+  padding: 24px;
+}
+.auth-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.auth-modal-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.auth-modal-close {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: var(--neutral);
+  color: var(--text-soft);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.auth-modal-close:hover {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.auth-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+.auth-field input {
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--neutral-border);
+  background: var(--bg-alt);
+  font-size: 0.92rem;
+  color: var(--text);
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s ease;
+}
+.auth-field input:focus {
+  border-color: var(--accent);
+}
+.auth-error {
+  margin: 0 0 14px;
+  font-size: 0.84rem;
+  color: var(--accent-strong);
+}
+.auth-actions {
+  display: flex;
+  gap: 10px;
+}
+.auth-submit-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.auth-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.auth-submit-btn.is-primary {
+  background: var(--accent-strong);
+  color: #fff;
+}
+.auth-submit-btn.is-primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.auth-submit-btn.is-secondary {
+  background: var(--neutral);
+  color: var(--text);
+}
+.auth-submit-btn.is-secondary:hover:not(:disabled) {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}

@@ -7,6 +7,8 @@
 <meta name="description" content="I can eat이 어떤 서비스인지, 지금 무엇을 쓸 수 있고 무엇을 준비 중인지 소개합니다.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍚</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="auth.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   /* index.html과 동일한 디자인 토큰을 그대로 재사용 (index.html은 수정하지 않음) */
   :root{
@@ -92,6 +94,11 @@
     transition:opacity .2s ease;
   }
   .nav-cta:hover{opacity:.82;}
+  .header-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
 
   /* ---------- Section shell ---------- */
   section{padding:56px 0;}
@@ -343,7 +350,10 @@
 <header class="site">
   <div class="wrap">
     <a class="logo" href="index.html">I can <span>eat</span></a>
-    <a class="nav-cta" href="index.html#search">맛집 검색하러 가기</a>
+    <div class="header-actions">
+      <a class="nav-cta" href="index.html#search">맛집 검색하러 가기</a>
+      <div id="authSlot"></div>
+    </div>
   </div>
 </header>
 
@@ -495,6 +505,7 @@
   </div>
 </footer>
 
+<script src="auth.js"></script>
 <script>
   (function(){
     var hour = new Date().getHours();

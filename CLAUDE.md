@@ -11,6 +11,7 @@
 - `about.html` — 서비스 소개(핵심 가치, 기능 미리보기 — 이용 가능/준비 중 구분, FAQ).
 - `restaurants.html` — 카카오 검색 결과 + 클릭 시 구글 리뷰/AI 분석 팝업.
 - `api/` — `restaurants.html`이 쓰는 Vercel 서버리스 함수(카카오/구글/제미나이 프록시). 자세한 내용은 아래 "맛집 검색 + 구글 리뷰" 섹션 참고.
+- `auth.js` / `auth.css` — 세 페이지가 공유하는 Supabase 로그인 모듈. 자세한 내용은 아래 "로그인 (Supabase Auth)" 섹션 참고.
 
 랜딩페이지의 비주얼(컬러/타이포/톤)을 변경해달라는 요청을 받으면 `icaneat_design.md`를 확인할 것. 카피/섹션 구성 변경은 문서보다 실제 구현 상태와 사용자 지시를 우선한다.
 
@@ -61,3 +62,12 @@
 **프로덕션(Vercel) 배포**: Vercel 대시보드 → Project Settings → Environment Variables에 `KAKAO_REST_API_KEY`, `GOOGLE_PLACES_API_KEY`, `GEMINI_API_KEY`를 등록해야 합니다 — 이 작업은 저장소 코드나 CLI로 대신할 수 없으며 프로젝트 소유자가 Vercel UI에서 직접 해야 합니다. 또한 구글 키의 GCP 프로젝트에서 "Places API (New)"가 활성화되어 있고 결제(billing)가 연결되어 있어야 합니다 — 비활성화 상태면 리뷰 조회가 403으로 실패합니다.
 
 구글 리뷰 조회 결과와 AI 분석 결과 모두 브라우저 `localStorage`에 만료 없이 캐시됩니다(각각 `icaneat:reviews:`, `icaneat:ai:` 접두사) — 같은 가게를 다시 클릭해도 API를 재호출하지 않습니다.
+
+## 로그인 (Supabase Auth)
+
+`auth.js`/`auth.css`는 `index.html`/`about.html`/`restaurants.html` 세 페이지가 동일하게 `<link>`/`<script>`로 불러와 쓰는 유일한 공용 파일이다(그 외에는 각 페이지가 자립형 — 위 원칙 참고). Supabase 이메일/비밀번호 로그인을 `@supabase/supabase-js` CDN(`https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2`)으로 붙였고, 비밀번호 해싱·세션 저장 등 보안 관련 로직은 전혀 직접 구현하지 않고 전부 Supabase에 맡긴다.
+
+- `auth.js`는 각 페이지의 `<div id="authSlot"></div>`(헤더의 `.header-actions` 안, 기존 nav 버튼 오른쪽)에 로그인 버튼 또는 `{이메일 앞부분}님 로그아웃`을 주입하고, 로그인/회원가입 모달(이메일+비밀번호, 에러는 한국어로 매핑)을 관리한다. Supabase Project URL과 Publishable key(`sb_publishable_...`)는 브라우저 노출이 전제된 공개 키라 `auth.js`에 직접 하드코딩되어 있다 — 카카오/구글/제미나이 REST 키처럼 서버 프록시가 필요 없다.
+- 다른 기능이 로그인 여부를 확인/요구할 때 쓰는 공개 인터페이스: `window.icaneatAuth.getUser()`(현재 유저 또는 `null`), `.onChange(cb)`(상태 변화 구독), `.requireLogin()`(비로그인 시 모달만 열고 `false` 반환, 로그인 상태면 `true`), `.signOut()`. `restaurants.html`의 "담기" 버튼이 `requireLogin()`으로 게이팅되어 있는 게 현재 유일한 사용처 — 이후 "맛집 저장" 기능도 이 인터페이스를 재사용할 것.
+- **Supabase 프로젝트 대시보드에서 "Confirm email"을 꺼둬야** 회원가입 시 이메일 인증 대기 없이 바로 로그인된다(Authentication → Sign In / Providers → Email). 이 설정은 MCP로 제공되는 Supabase 도구 목록에 없어 대시보드에서 직접 켜고 꺼야 한다.
+- Supabase MCP 서버(`claude mcp add --transport http supabase https://mcp.supabase.com/mcp`)가 연결되어 있으면 `list_tables`/`get_advisors`/`execute_sql` 등으로 프로젝트를 직접 조회·조작할 수 있다 — 이후 "맛집 저장" 기능에서 테이블을 만들 때 활용할 것.
