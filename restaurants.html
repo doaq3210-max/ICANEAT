@@ -7,6 +7,7 @@
 <meta name="description" content="키워드나 카테고리로 주변 맛집/카페를 검색합니다.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍚</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
 <style>
   /* index.html과 동일한 디자인 토큰을 그대로 재사용 (index.html은 수정하지 않음) */
   :root{
@@ -413,6 +414,80 @@
   }
   .review-panel-link:hover{opacity:.75;}
 
+  /* ---------- AI 분석 ---------- */
+  .ai-section{
+    margin-top:20px;
+    padding-top:18px;
+    border-top:1px solid var(--neutral-border);
+  }
+  .ai-section-title{
+    margin:0 0 12px;
+    font-size:0.8rem;
+    font-weight:700;
+    color:var(--text-soft);
+  }
+  .sentiment-bar{
+    display:flex;
+    height:10px;
+    border-radius:999px;
+    overflow:hidden;
+    background:var(--neutral);
+  }
+  .sentiment-bar-seg.positive{ background:#6FAF7C; }
+  .sentiment-bar-seg.neutral{ background:#E3C24D; }
+  .sentiment-bar-seg.negative{ background:#C6706A; }
+  .sentiment-legend{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-top:8px;
+    font-size:0.78rem;
+    color:var(--text-soft);
+  }
+  .sentiment-legend-dot{
+    width:8px;height:8px;
+    border-radius:50%;
+    display:inline-block;
+    margin-right:4px;
+  }
+  .sentiment-legend-dot.positive{ background:#6FAF7C; }
+  .sentiment-legend-dot.neutral{ background:#E3C24D; }
+  .sentiment-legend-dot.negative{ background:#C6706A; }
+  .wordcloud-wrap{
+    margin-top:18px;
+  }
+  .wordcloud-canvas{
+    width:100%;
+    display:block;
+  }
+  .ai-summary-bubble{
+    position:relative;
+    margin-top:22px;
+    background:var(--bg);
+    border:1px solid var(--neutral-border);
+    border-radius:var(--radius-md);
+    padding:14px 16px;
+    font-size:0.9rem;
+  }
+  .ai-summary-bubble:before{
+    content:'';
+    position:absolute;
+    top:-7px;
+    left:24px;
+    width:14px;height:14px;
+    background:var(--bg);
+    border-left:1px solid var(--neutral-border);
+    border-top:1px solid var(--neutral-border);
+    transform:rotate(45deg);
+  }
+  .ai-summary-label{
+    display:block;
+    margin-bottom:6px;
+    font-size:0.75rem;
+    font-weight:700;
+    color:var(--accent-strong);
+  }
+
   footer.site{
     padding:24px 0 40px;
     border-top:1px solid var(--neutral-border);
@@ -502,7 +577,9 @@
 
   var PROXY_BASE = '/api/kakao-search';
   var REVIEWS_BASE = '/api/google-reviews';
+  var AI_ANALYZE_BASE = '/api/ai-analyze';
   var REVIEW_CACHE_PREFIX = 'icaneat:reviews:';
+  var AI_CACHE_PREFIX = 'icaneat:ai:';
   var SEOUL_CITY_HALL = { lat: 37.532600, lng: 127.024612 };
   var RADIUS_M = 20000;
   var PAGE_SIZE = 15;
@@ -671,13 +748,21 @@
     }
   }
 
-  function reviewCacheKey(card) {
+  function buildCacheKey(card, prefix) {
     var id = card.dataset.placeId;
-    if (id) return REVIEW_CACHE_PREFIX + 'id:' + id;
+    if (id) return prefix + 'id:' + id;
     var lat = parseFloat(card.dataset.lat);
     var lng = parseFloat(card.dataset.lng);
-    return REVIEW_CACHE_PREFIX + encodeURIComponent(card.dataset.placeName) + ':' +
+    return prefix + encodeURIComponent(card.dataset.placeName) + ':' +
       lat.toFixed(4) + ',' + lng.toFixed(4);
+  }
+
+  function reviewCacheKey(card) {
+    return buildCacheKey(card, REVIEW_CACHE_PREFIX);
+  }
+
+  function aiCacheKey(card) {
+    return buildCacheKey(card, AI_CACHE_PREFIX);
   }
 
   function getCachedReview(key) {
@@ -746,7 +831,7 @@
     syncPanelHeight();
   }
 
-  function renderPanelResult(data) {
+  function renderPanelResult(card, data) {
     reviewPanelBody.innerHTML = '';
     reviewPanelBody.appendChild(buildPanelHeader(data.name));
 
@@ -792,6 +877,13 @@
 
     reviewPanelBody.appendChild(list);
 
+    if ((data.reviews || []).length > 0) {
+      var aiRefs = buildAiSection();
+      reviewPanelBody.appendChild(aiRefs.section);
+      renderAiLoading(aiRefs);
+      runAiAnalysis(card, data, aiRefs);
+    }
+
     if (data.mapsUri) {
       var link = document.createElement('a');
       link.className = 'review-panel-link';
@@ -803,6 +895,148 @@
     }
 
     syncPanelHeight();
+  }
+
+  function buildAiSection() {
+    var section = document.createElement('div');
+    section.className = 'ai-section';
+
+    var title = document.createElement('p');
+    title.className = 'ai-section-title';
+    title.textContent = 'AI 리뷰 분석';
+    section.appendChild(title);
+
+    var body = document.createElement('div');
+    body.className = 'ai-section-body';
+    section.appendChild(body);
+
+    return { section: section, body: body };
+  }
+
+  function renderAiLoading(refs) {
+    refs.body.innerHTML = '';
+    var status = document.createElement('p');
+    status.className = 'review-panel-status';
+    status.textContent = 'AI가 분석하는 중...';
+    refs.body.appendChild(status);
+    syncPanelHeight();
+  }
+
+  function renderAiError(refs) {
+    refs.body.innerHTML = '';
+    var status = document.createElement('p');
+    status.className = 'review-panel-status review-panel-status--error';
+    status.textContent = 'AI 분석을 불러오지 못했어요.';
+    refs.body.appendChild(status);
+    syncPanelHeight();
+  }
+
+  function renderAiResult(refs, result) {
+    refs.body.innerHTML = '';
+
+    var sentiment = result.sentiment || {};
+    var pos = sentiment.positive || 0;
+    var neu = sentiment.neutral || 0;
+    var neg = sentiment.negative || 0;
+    var total = pos + neu + neg || 1;
+
+    var bar = document.createElement('div');
+    bar.className = 'sentiment-bar';
+    [
+      ['positive', pos],
+      ['neutral', neu],
+      ['negative', neg],
+    ].forEach(function (entry) {
+      if (entry[1] <= 0) return;
+      var seg = document.createElement('div');
+      seg.className = 'sentiment-bar-seg ' + entry[0];
+      seg.style.flexBasis = (entry[1] / total * 100) + '%';
+      bar.appendChild(seg);
+    });
+    refs.body.appendChild(bar);
+
+    var legend = document.createElement('div');
+    legend.className = 'sentiment-legend';
+    [
+      ['positive', '긍정', pos],
+      ['neutral', '보통', neu],
+      ['negative', '부정', neg],
+    ].forEach(function (entry) {
+      var item = document.createElement('span');
+      var dot = document.createElement('span');
+      dot.className = 'sentiment-legend-dot ' + entry[0];
+      item.appendChild(dot);
+      item.appendChild(document.createTextNode(entry[1] + ' ' + entry[2]));
+      legend.appendChild(item);
+    });
+    refs.body.appendChild(legend);
+
+    var keywords = Array.isArray(result.keywords) ? result.keywords : [];
+    if (keywords.length > 0) {
+      var wcWrap = document.createElement('div');
+      wcWrap.className = 'wordcloud-wrap';
+      var canvas = document.createElement('canvas');
+      canvas.className = 'wordcloud-canvas';
+      wcWrap.appendChild(canvas);
+      refs.body.appendChild(wcWrap);
+
+      canvas.width = reviewPanelBody.clientWidth || 320;
+      canvas.height = 220;
+
+      if (window.WordCloud) {
+        window.WordCloud(canvas, {
+          list: keywords.map(function (k) { return [k.word, k.score || 1]; }),
+          weightFactor: function (size) { return size * 5 + 14; },
+          fontFamily: "'Pretendard Variable','Pretendard',sans-serif",
+          backgroundColor: 'transparent',
+          color: function (word) {
+            var kw = keywords.filter(function (k) { return k.word === word; })[0];
+            return kw && kw.sentiment === 'negative' ? '#C6544B' : '#4C9A6A';
+          },
+        });
+      }
+    }
+
+    if (result.summary) {
+      var bubble = document.createElement('div');
+      bubble.className = 'ai-summary-bubble';
+      var label = document.createElement('span');
+      label.className = 'ai-summary-label';
+      label.textContent = 'AI 총평';
+      bubble.appendChild(label);
+      bubble.appendChild(document.createTextNode(result.summary));
+      refs.body.appendChild(bubble);
+    }
+
+    syncPanelHeight();
+  }
+
+  function runAiAnalysis(card, data, refs) {
+    var key = aiCacheKey(card);
+    var cached = getCachedReview(key);
+    if (cached) {
+      renderAiResult(refs, cached);
+      return;
+    }
+
+    fetch(AI_ANALYZE_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: card.dataset.placeName,
+        reviews: data.reviews.map(function (r) { return { text: r.text, rating: r.rating }; }),
+      }),
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (result) {
+        if (activeReviewCard !== card) return;
+        if (result.error) throw new Error(result.error);
+        setCachedReview(key, result);
+        renderAiResult(refs, result);
+      })
+      .catch(function () {
+        if (activeReviewCard === card) renderAiError(refs);
+      });
   }
 
   function setLoadingUi(isLoading) {
@@ -949,7 +1183,7 @@
     var cached = getCachedReview(key);
     if (cached) {
       if (cached.found) {
-        renderPanelResult(cached);
+        renderPanelResult(card, cached);
       } else {
         renderPanelNotFound(card.dataset.placeName);
       }
@@ -970,7 +1204,7 @@
         if (data.error) throw new Error(data.error);
         setCachedReview(key, data);
         if (data.found) {
-          renderPanelResult(data);
+          renderPanelResult(card, data);
         } else {
           renderPanelNotFound(card.dataset.placeName);
         }
