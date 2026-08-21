@@ -14,15 +14,11 @@
 
 ## 실행 / 프리뷰
 
-`index.html`은 단일 자립형 정적 파일(인라인 CSS + JS, Pretendard 폰트는 CDN `<link>`로 로드)입니다. 별도 빌드 단계는 없습니다.
+`index.html`은 단일 자립형 정적 파일(인라인 CSS + JS, Pretendard 폰트는 CDN `<link>`로 로드)입니다. 별도 빌드 단계는 없습니다. `index.html` 단독 프리뷰라면 `npx --yes serve -l 8765 .` 후 `http://localhost:8765/index.html`을 열어도 됩니다.
 
-브라우저 확장 기반 도구(예: 브라우저 자동화)로 프리뷰할 때는 `file://`로 여는 대신 HTTP로 서빙할 것:
-```
-npx --yes serve -l 8765 .
-```
-이후 `http://localhost:8765/index.html`을 엽니다. (이 환경에는 Python이 설치되어 있지 않아 `python -m http.server`는 동작하지 않으므로, `npx serve` 방식을 사용할 것.)
+다만 `restaurants.html`은 `/api` Vercel 서버리스 함수(카카오/구글 프록시)를 호출하므로, 이 페이지를 포함한 전체 프리뷰는 `npx serve`가 아니라 아래 "맛집 검색" 섹션의 `vercel dev` 플로우를 사용해야 합니다.
 
-이 저장소에는 테스트, 린터, 빌드/배포 명령이 구성되어 있지 않습니다.
+이 저장소에는 테스트, 린터, 별도 빌드 명령이 구성되어 있지 않습니다. 배포는 Vercel(정적 파일 + `/api` 서버리스 함수)을 사용합니다.
 
 ## 랜딩페이지 구조 (`index.html`)
 
@@ -48,8 +44,20 @@ CTA 폼은 의도적으로 서버 연동이 없습니다 — 프론트엔드 전
  - 데스크탑(1440)
  - 으로 브레이크포인트 설정
 
-## 맛집 검색 (`restaurants.html` + `proxy-server.js`)
+## 맛집 검색 + 구글 리뷰 (`restaurants.html` + `/api`)
 
-`restaurants.html`은 키워드/카테고리로 카카오 로컬 API를 검색해 결과를 카드로 보여주는 별도 페이지입니다(인라인 CSS+JS, `index.html`의 디자인 토큰을 재사용). 카카오 로컬 API는 서버사이드 호출 전제라 브라우저에서 직접 fetch하면 CORS로 막히므로, 순수 Node 내장 모듈만 사용한 최소 프록시 `proxy-server.js`(포트 8787, `/api/search`)를 거칩니다. REST API 키는 코드에 하드코딩하지 않고 `KAKAO_REST_API_KEY` 환경변수로 읽습니다.
+`restaurants.html`은 키워드/카테고리로 카카오 로컬 API를 검색해 결과를 카드로 보여주고, 카드를 클릭하면 그리드 아래 고정 패널에 해당 가게의 구글 리뷰(Places API New)를 보여주는 페이지입니다(인라인 CSS+JS, `index.html`의 디자인 토큰을 재사용).
 
-실행: `$env:KAKAO_REST_API_KEY="<REST API KEY>"; node proxy-server.js`로 프록시를 띄운 뒤, 기존 방식대로 `npx --yes serve -l 8765 .`로 정적 서버를 띄워 `http://localhost:8765/restaurants.html`을 엽니다.
+카카오/구글 API는 모두 서버사이드 호출 전제(REST 키 노출 방지, CORS)라 브라우저에서 직접 호출하지 않고 Vercel 서버리스 함수를 거칩니다:
+
+- `api/kakao-search.js` — 카카오 로컬 API 프록시 (`GET /api/kakao-search`, 기존 `proxy-server.js` 대체). `KAKAO_REST_API_KEY` 환경변수 사용.
+- `api/google-reviews.js` — 가게 이름+좌표로 Places API (New) `searchText`를 호출해 150m 이내 최적 매칭 1건의 별점/리뷰를 정리해서 반환 (`GET /api/google-reviews?name=&lat=&lng=`). `GOOGLE_PLACES_API_KEY` 환경변수 사용. `locationBias`는 반경을 강제하지 않으므로 응답 후 서버에서 haversine 거리로 150m 초과 후보를 제외한다.
+- `api/_utils.js` — 두 함수가 공유하는 CORS/JSON 응답 헬퍼 (파일명이 `_`로 시작해 Vercel이 라우팅하지 않음).
+
+두 REST API 키 모두 코드에 하드코딩하지 않고 환경변수로만 읽습니다.
+
+**로컬 실행**: `.env.example`을 `.env`로 복사해 `KAKAO_REST_API_KEY`, `GOOGLE_PLACES_API_KEY`를 채운 뒤 `npx vercel dev`를 실행합니다. 정적 파일과 `/api` 함수를 동일 코드로 로컬 서빙하므로, 안내되는 포트(보통 `http://localhost:3000`)에서 `restaurants.html`을 엽니다. (기존 `proxy-server.js` + `npx serve` 이원화 방식은 폐기되었습니다.)
+
+**프로덕션(Vercel) 배포**: Vercel 대시보드 → Project Settings → Environment Variables에 `KAKAO_REST_API_KEY`와 `GOOGLE_PLACES_API_KEY`를 등록해야 합니다 — 이 작업은 저장소 코드나 CLI로 대신할 수 없으며 프로젝트 소유자가 Vercel UI에서 직접 해야 합니다. 또한 구글 키의 GCP 프로젝트에서 "Places API (New)"가 활성화되어 있고 결제(billing)가 연결되어 있어야 합니다 — 비활성화 상태면 리뷰 조회가 403으로 실패합니다.
+
+구글 리뷰 조회 결과는 브라우저 `localStorage`에 만료 없이 캐시됩니다(`icaneat:reviews:` 접두사) — 같은 가게를 다시 클릭해도 API를 재호출하지 않습니다.

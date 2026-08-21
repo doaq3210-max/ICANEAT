@@ -311,6 +311,108 @@
     box-shadow:none;
   }
 
+  .rest-card.is-active-review{
+    border-color:var(--accent);
+  }
+
+  /* ---------- Review panel ---------- */
+  .review-panel{
+    margin-top:28px;
+    border:1px solid var(--neutral-border);
+    border-radius:var(--radius-lg);
+    background:var(--bg-alt);
+    overflow:hidden;
+    max-height:0;
+    transition:max-height .3s ease;
+  }
+  .review-panel-body{
+    padding:24px;
+  }
+  .review-panel-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:12px;
+  }
+  .review-panel-name{
+    margin:0;
+    font-size:1.05rem;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .review-panel-close{
+    flex:none;
+    width:26px;height:26px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    border:none;
+    background:var(--neutral);
+    color:var(--text-soft);
+    font-size:1rem;
+    line-height:1;
+    cursor:pointer;
+    transition:background .18s ease, color .18s ease;
+  }
+  .review-panel-close:hover{
+    background:var(--accent-soft);
+    color:var(--accent-strong);
+  }
+  .review-panel-rating{
+    margin:0 0 16px;
+    font-size:0.9rem;
+    color:var(--text-soft);
+  }
+  .review-panel-status{
+    text-align:center;
+    padding:24px 0;
+    color:var(--text-soft);
+    font-size:0.9rem;
+  }
+  .review-panel-status--error{
+    color:var(--accent-strong);
+  }
+  .review-list{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    margin:0;
+    padding:0;
+    list-style:none;
+  }
+  .review-item{
+    border-top:1px solid var(--neutral-border);
+    padding-top:14px;
+  }
+  .review-item-meta{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:0.8rem;
+    color:var(--text-soft);
+    margin-bottom:4px;
+  }
+  .review-item-author{
+    font-weight:600;
+    color:var(--text);
+  }
+  .review-item-text{
+    margin:0;
+    font-size:0.88rem;
+    color:var(--text);
+  }
+  .review-panel-link{
+    display:inline-block;
+    margin-top:18px;
+    font-size:0.85rem;
+    font-weight:600;
+    color:var(--accent-strong);
+    text-decoration:none;
+    border-bottom:1px solid var(--accent);
+    padding-bottom:1px;
+  }
+  .review-panel-link:hover{opacity:.75;}
+
   footer.site{
     padding:24px 0 40px;
     border-top:1px solid var(--neutral-border);
@@ -376,6 +478,10 @@
     <div class="load-more-wrap">
       <button type="button" class="load-more-btn" id="loadMoreBtn" hidden>더 보기</button>
     </div>
+
+    <div class="review-panel" id="reviewPanel">
+      <div class="review-panel-body" id="reviewPanelBody"></div>
+    </div>
   </section>
 </main>
 
@@ -394,7 +500,9 @@
 (function(){
   'use strict';
 
-  var PROXY_BASE = 'http://localhost:8787/api/search';
+  var PROXY_BASE = '/api/kakao-search';
+  var REVIEWS_BASE = '/api/google-reviews';
+  var REVIEW_CACHE_PREFIX = 'icaneat:reviews:';
   var SEOUL_CITY_HALL = { lat: 37.532600, lng: 127.024612 };
   var RADIUS_M = 20000;
   var PAGE_SIZE = 15;
@@ -467,6 +575,10 @@
   function renderCard(doc) {
     var card = document.createElement('article');
     card.className = 'rest-card';
+    card.dataset.placeId = doc.id || '';
+    card.dataset.placeName = doc.place_name || '';
+    card.dataset.lat = doc.y || '';
+    card.dataset.lng = doc.x || '';
 
     var body = document.createElement('div');
     body.className = 'rest-card-body';
@@ -535,6 +647,164 @@
     return card;
   }
 
+  var reviewPanel = document.getElementById('reviewPanel');
+  var reviewPanelBody = document.getElementById('reviewPanelBody');
+  var activeReviewCard = null;
+
+  function syncPanelHeight() {
+    if (reviewPanel.classList.contains('open')) {
+      reviewPanel.style.maxHeight = reviewPanel.scrollHeight + 'px';
+    }
+  }
+
+  function openPanel() {
+    reviewPanel.classList.add('open');
+    syncPanelHeight();
+  }
+
+  function closePanel() {
+    reviewPanel.classList.remove('open');
+    reviewPanel.style.maxHeight = null;
+    if (activeReviewCard) {
+      activeReviewCard.classList.remove('is-active-review');
+      activeReviewCard = null;
+    }
+  }
+
+  function reviewCacheKey(card) {
+    var id = card.dataset.placeId;
+    if (id) return REVIEW_CACHE_PREFIX + 'id:' + id;
+    var lat = parseFloat(card.dataset.lat);
+    var lng = parseFloat(card.dataset.lng);
+    return REVIEW_CACHE_PREFIX + encodeURIComponent(card.dataset.placeName) + ':' +
+      lat.toFixed(4) + ',' + lng.toFixed(4);
+  }
+
+  function getCachedReview(key) {
+    try {
+      var raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function setCachedReview(key, data) {
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch (e) {
+      // 저장 공간 부족, 프라이빗 모드 등 — 캐시 없이 조용히 진행.
+    }
+  }
+
+  function buildPanelHeader(name) {
+    var header = document.createElement('div');
+    header.className = 'review-panel-header';
+
+    var h3 = document.createElement('h3');
+    h3.className = 'review-panel-name';
+    h3.textContent = name || '';
+    header.appendChild(h3);
+
+    var closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'review-panel-close';
+    closeBtn.setAttribute('aria-label', '리뷰 패널 닫기');
+    closeBtn.textContent = '×';
+    header.appendChild(closeBtn);
+
+    return header;
+  }
+
+  function renderPanelLoading(name) {
+    reviewPanelBody.innerHTML = '';
+    reviewPanelBody.appendChild(buildPanelHeader(name));
+    var status = document.createElement('p');
+    status.className = 'review-panel-status';
+    status.textContent = '리뷰를 불러오는 중...';
+    reviewPanelBody.appendChild(status);
+    syncPanelHeight();
+  }
+
+  function renderPanelNotFound(name) {
+    reviewPanelBody.innerHTML = '';
+    reviewPanelBody.appendChild(buildPanelHeader(name));
+    var status = document.createElement('p');
+    status.className = 'review-panel-status';
+    status.textContent = '리뷰를 찾을 수 없어요.';
+    reviewPanelBody.appendChild(status);
+    syncPanelHeight();
+  }
+
+  function renderPanelError(name) {
+    reviewPanelBody.innerHTML = '';
+    reviewPanelBody.appendChild(buildPanelHeader(name));
+    var status = document.createElement('p');
+    status.className = 'review-panel-status review-panel-status--error';
+    status.textContent = '리뷰를 불러오지 못했어요. 잠시 후 다시 시도해주세요.';
+    reviewPanelBody.appendChild(status);
+    syncPanelHeight();
+  }
+
+  function renderPanelResult(data) {
+    reviewPanelBody.innerHTML = '';
+    reviewPanelBody.appendChild(buildPanelHeader(data.name));
+
+    var ratingP = document.createElement('p');
+    ratingP.className = 'review-panel-rating';
+    ratingP.textContent = (data.rating != null)
+      ? '⭐ ' + data.rating.toFixed(1) + ' (' + (data.userRatingCount || 0) + '개 리뷰)'
+      : '평점 정보 없음';
+    reviewPanelBody.appendChild(ratingP);
+
+    var list = document.createElement('ul');
+    list.className = 'review-list';
+
+    (data.reviews || []).forEach(function (r) {
+      var li = document.createElement('li');
+      li.className = 'review-item';
+
+      var meta = document.createElement('div');
+      meta.className = 'review-item-meta';
+
+      var author = document.createElement('span');
+      author.className = 'review-item-author';
+      author.textContent = r.author || '익명';
+      meta.appendChild(author);
+
+      var ratingSpan = document.createElement('span');
+      ratingSpan.textContent = '★'.repeat(Math.round(r.rating || 0));
+      meta.appendChild(ratingSpan);
+
+      var timeSpan = document.createElement('span');
+      timeSpan.textContent = r.relativeTime || '';
+      meta.appendChild(timeSpan);
+
+      li.appendChild(meta);
+
+      var text = document.createElement('p');
+      text.className = 'review-item-text';
+      text.textContent = r.text || '';
+      li.appendChild(text);
+
+      list.appendChild(li);
+    });
+
+    reviewPanelBody.appendChild(list);
+
+    if (data.mapsUri) {
+      var link = document.createElement('a');
+      link.className = 'review-panel-link';
+      link.href = data.mapsUri;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.textContent = '구글 지도에서 전체 리뷰 보기 →';
+      reviewPanelBody.appendChild(link);
+    }
+
+    syncPanelHeight();
+  }
+
   function setLoadingUi(isLoading) {
     state.loading = isLoading;
     loadMoreBtn.disabled = isLoading;
@@ -548,6 +818,7 @@
     if (!append) {
       restGrid.innerHTML = '';
       loadMoreBtn.hidden = true;
+      closePanel();
     }
     showStatus('검색 중입니다…', 'loading');
 
@@ -651,6 +922,66 @@
     var isSaved = saveBtn.classList.toggle('is-saved');
     saveBtn.textContent = isSaved ? '담았어요' : '담기';
     saveBtn.setAttribute('aria-pressed', isSaved ? 'true' : 'false');
+  });
+
+  // 카드 클릭: 구글 리뷰 패널을 열고 채운다. "담기"/카카오맵 링크 클릭은
+  // 각자의 동작(토글/이동)이 있으므로 여기서는 무시한다.
+  restGrid.addEventListener('click', function (e) {
+    if (e.target.closest('.rest-card-save')) return;
+    if (e.target.closest('.rest-card-link')) return;
+
+    var card = e.target.closest('.rest-card');
+    if (!card) return;
+
+    if (activeReviewCard === card && reviewPanel.classList.contains('open')) {
+      closePanel();
+      return;
+    }
+
+    if (activeReviewCard) {
+      activeReviewCard.classList.remove('is-active-review');
+    }
+    activeReviewCard = card;
+    card.classList.add('is-active-review');
+    openPanel();
+
+    var key = reviewCacheKey(card);
+    var cached = getCachedReview(key);
+    if (cached) {
+      if (cached.found) {
+        renderPanelResult(cached);
+      } else {
+        renderPanelNotFound(card.dataset.placeName);
+      }
+      return;
+    }
+
+    renderPanelLoading(card.dataset.placeName);
+
+    var params = new URLSearchParams();
+    params.set('name', card.dataset.placeName);
+    params.set('lat', card.dataset.lat);
+    params.set('lng', card.dataset.lng);
+
+    fetch(REVIEWS_BASE + '?' + params.toString())
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (activeReviewCard !== card) return;
+        if (data.error) throw new Error(data.error);
+        setCachedReview(key, data);
+        if (data.found) {
+          renderPanelResult(data);
+        } else {
+          renderPanelNotFound(card.dataset.placeName);
+        }
+      })
+      .catch(function () {
+        if (activeReviewCard === card) renderPanelError(card.dataset.placeName);
+      });
+  });
+
+  reviewPanel.addEventListener('click', function (e) {
+    if (e.target.closest('.review-panel-close')) closePanel();
   });
 
   // 초기 진입 시: 위치 기반으로 기본 카테고리(전체→FD6) 결과를 보여준다.
