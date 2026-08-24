@@ -37,10 +37,14 @@
 
 `index.html`/`about.html`/`restaurants.html`/`mypage.html` 네 페이지 모두 헤더(로고 + `#authSlot`만 있는 단순한 형태) 바로 아래에 동일한 디자인의 가로 스크롤 칩 네비게이션을 둔다 — 모바일 가독성 개선 + "모든 페이지에서 각 주요 기능으로 갈 수 있는, 페이지마다 동일한 네비게이션"이라는 명시적 요청에 따른 것이다. 과거 각 페이지 헤더에 흩어져 있던 개별 CTA(`about` 버튼, `맛집 검색하러 가기`, `맛집주머니` 버튼, `맛집 검색 (베타)`/`맛집주머니` 텍스트 라벨)는 전부 이 칩 네비 하나로 통합되었으므로 새로 추가하지 말 것.
 
-- 마크업: `<nav class="quick-nav-wrap"><div class="quick-nav">` 안에 `.quick-nav-item` 링크 4개(홈→`index.html`, 검색→`restaurants.html`, 맛집주머니→`mypage.html`, about→`about.html`), 각각 인라인 SVG 아이콘(24px 그리드, stroke 기반 — 이모지 금지) + 라벨. 현재 페이지에 해당하는 칩에 `.is-active`를 직접 마크업에 하드코딩한다(페이지마다 정적으로 다름, JS로 계산하지 않음).
+- 마크업: `<nav class="quick-nav-wrap"><div class="quick-nav">` 안에 `.quick-nav-item` 링크 3개(홈→`index.html`, 검색→`restaurants.html`, 맛집주머니→`mypage.html`), 각각 인라인 SVG 아이콘(24px 그리드, stroke 기반 — 이모지 금지) + 라벨. `about`은 이 칩 네비에 없다 — 아래 "푸터" 섹션 참고, 실수로 다시 추가하지 말 것. 현재 페이지에 해당하는 칩에 `.is-active`를 직접 마크업에 하드코딩한다(페이지마다 정적으로 다름, JS로 계산하지 않음). `about.html`은 네비 항목 중 어느 것도 현재 페이지가 아니므로 `.is-active` 칩이 없다.
 - 스타일: `.quick-nav-wrap`/`.quick-nav`/`.quick-nav-item`/`.quick-nav-item.is-active` — 네 파일에 각각 인라인 `<style>`로 동일하게 복제되어 있다(공용 CSS 파일이 아님 — `auth.css`/`restaurant-card.css`처럼 로직이 복잡하지 않고 페이지별 활성 상태만 다른 정적 마크업이라 각 페이지 자립형 원칙을 그대로 따름). 칩은 `padding:13px 18px`로 44px 이상의 탭 영역을 보장하고, `overflow-x:auto`로 좁은 화면에서 가로 스크롤된다.
 - `맛집주머니` 칩은 네 페이지 모두에서 `id="navPocket"`이며, 각 페이지 스크립트에 동일한 클릭 인터셉트가 있다: 비로그인 상태면 `e.preventDefault()` 후 `window.icaneatAuth.requireLogin()`으로 로그인 모달만 띄운다(`restaurants.html`의 기존 "담기" 게이팅과 같은 패턴). 로그인 여부와 무관하게 칩 자체는 네 페이지 어디서나 항상 보인다 — 페이지마다 칩 구성이 달라지지 않게 하려고 숨김 처리를 쓰지 않는다.
 - 새 페이지를 추가하거나 이 네비 항목을 바꿀 일이 있으면 네 파일 모두에서 마크업·스타일·활성 칩·`navPocket` 스크립트를 함께 갱신할 것 — 한 파일만 고치면 "모든 페이지 동일 디자인" 요건이 깨진다.
+
+## 푸터
+
+네 페이지 모두 동일한 구조의 푸터를 쓴다: `<footer class="site"><div class="wrap">` 안에 `.foot-left`(로고 + `© 2026 I can eat. All rights reserved.`)와 `.foot-right`(`about` 링크 → `Sungwoo Kim`(일반 텍스트) → 이메일(`mailto:doaq3210@gmail.com`) → `.sns`(IG/X, 계정 준비 전이라 링크 없는 placeholder `<span>`))가 이 순서로 나란히 온다. `about` 페이지로 가는 링크는 상단 칩 네비가 아니라 이 푸터에만 있다 — 그래서 칩 네비는 3개(홈/검색/맛집주머니)뿐이다. CSS(`footer.site`/`footer.site .wrap`/`.foot-left`/`.foot-right`/`.sns`)도 네 파일에 각각 동일하게 복제되어 있다(칩 네비와 같은 이유로 공용 CSS로 분리하지 않음). 모바일에서는 `.foot-left`/`.foot-right`가 세로로 쌓이고(`footer.site .wrap{flex-direction:column}`), 768px 이상에서 가로 배치로 바뀐다. 이 구조를 바꿀 일이 있으면 네 파일 모두 함께 갱신할 것.
 
 ## 유지해야 할 디자인 제약
 

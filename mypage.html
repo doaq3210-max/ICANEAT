@@ -432,10 +432,40 @@
   }
 
   footer.site{
-    padding:24px 0 40px;
     border-top:1px solid var(--neutral-border);
-    text-align:center;
-    font-size:0.78rem;
+    padding:36px 0;
+  }
+  footer.site .wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .foot-left{
+    font-size:0.85rem;
+    color:var(--text-soft);
+  }
+  .foot-left .logo{display:block; margin-bottom:6px;}
+  .foot-right{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:16px;
+    font-size:0.85rem;
+    color:var(--text-soft);
+  }
+  .foot-right a{text-decoration:none;}
+  .sns{
+    display:flex;
+    gap:8px;
+  }
+  .sns span{
+    width:32px;height:32px;
+    border-radius:50%;
+    background:var(--neutral);
+    display:flex;align-items:center;justify-content:center;
+    font-size:0.8rem;
     color:var(--text-soft);
   }
 
@@ -443,6 +473,7 @@
   @media (min-width:768px){
     .wrap{padding:0 24px;}
     .quick-nav{padding-left:24px; padding-right:24px;}
+    footer.site .wrap{flex-direction:row; align-items:center; justify-content:space-between;}
     .pocket-grid{
       grid-template-columns:repeat(2, 1fr);
       gap:22px;
@@ -480,10 +511,6 @@
     <a class="quick-nav-item is-active" href="mypage.html" id="navPocket">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l1 12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
       맛집주머니
-    </a>
-    <a class="quick-nav-item" href="about.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r="0.9" fill="currentColor" stroke="none"/></svg>
-      about
     </a>
   </div>
 </nav>
@@ -535,7 +562,21 @@
 </div>
 
 <footer class="site">
-  <div class="wrap">I can eat — 내가 담은 맛집은 나만 볼 수 있어요.</div>
+  <div class="wrap">
+    <div class="foot-left">
+      <span class="logo">I can<span style="color:var(--accent-strong)"> eat</span></span>
+      © 2026 I can eat. All rights reserved.
+    </div>
+    <div class="foot-right">
+      <a href="about.html">about</a>
+      <span>Sungwoo Kim</span>
+      <a href="mailto:doaq3210@gmail.com">doaq3210@gmail.com</a>
+      <div class="sns">
+        <span title="Instagram (준비 중)">IG</span>
+        <span title="X (준비 중)">X</span>
+      </div>
+    </div>
+  </div>
 </footer>
 
 <script src="auth.js"></script>
