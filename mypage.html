@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>I can eat — 맛집주머니</title>
+<meta name="description" content="내가 담은 맛집을 모아 봅니다.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍚</text></svg>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="auth.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  /* restaurants.html과 동일한 디자인 토큰을 그대로 재사용 */
+  :root{
+    --bg:#FFFFFF;
+    --bg-alt:#FAFAF8;
+    --text:#2B2B2E;
+    --text-soft:#6B6B70;
+    --neutral:#F1EFEA;
+    --neutral-border:#E4E1DB;
+    --radius-lg:20px;
+    --radius-md:14px;
+    --radius-sm:10px;
+    --maxw:1080px;
+
+    --shadow-card:0 1px 2px rgba(30,28,24,0.04), 0 6px 18px -10px rgba(30,28,24,0.10);
+    --shadow-card-hover:0 2px 4px rgba(30,28,24,0.06), 0 18px 32px -16px rgba(30,28,24,0.16);
+
+    --accent-soft:#F6E4D3;
+    --accent:#E3A874;
+    --accent-strong:#B85C2E;
+  }
+  html[data-daypart="dinner"]{
+    --accent-soft:#DCEBF5;
+    --accent:#7FAFC9;
+    --accent-strong:#3E7A99;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;
+    letter-spacing:-0.01em;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{color:inherit;}
+  button{font-family:inherit;}
+
+  .wrap{
+    max-width:var(--maxw);
+    margin:0 auto;
+    padding:0 18px;
+  }
+
+  /* ---------- Header ---------- */
+  header.site{
+    padding:20px 0;
+    border-bottom:1px solid var(--neutral-border);
+  }
+  header.site .wrap{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .logo{
+    font-weight:800;
+    font-size:1.05rem;
+    letter-spacing:-0.02em;
+    text-decoration:none;
+    transition:opacity .2s ease;
+  }
+  .logo:hover{opacity:.82;}
+  .logo span{color:var(--accent-strong);}
+  .page-title{
+    font-size:0.85rem;
+    color:var(--text-soft);
+  }
+  .header-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+
+  /* ---------- Content ---------- */
+  .pocket-section{
+    padding:28px 0 64px;
+  }
+  .pocket-heading{
+    margin:0 0 20px;
+    font-size:1.3rem;
+    font-weight:800;
+    letter-spacing:-0.02em;
+  }
+
+  .status-msg{
+    text-align:center;
+    padding:40px 16px;
+    color:var(--text-soft);
+    font-size:0.9rem;
+    border-radius:var(--radius-lg);
+    border:1px solid var(--neutral-border);
+    background:var(--bg-alt);
+  }
+  .status-msg--error{
+    color:var(--accent-strong);
+  }
+
+  .pocket-empty{
+    text-align:center;
+    padding:56px 20px;
+    color:var(--text-soft);
+    font-size:0.95rem;
+    border-radius:var(--radius-lg);
+    border:1px solid var(--neutral-border);
+    background:var(--bg-alt);
+  }
+  .pocket-empty p{margin:0 0 20px;}
+  .pocket-empty-btn{
+    display:inline-block;
+    padding:12px 26px;
+    border-radius:999px;
+    background:var(--text);
+    color:#fff;
+    font-size:0.88rem;
+    font-weight:600;
+    text-decoration:none;
+    transition:opacity .2s ease, transform .18s ease;
+  }
+  .pocket-empty-btn:hover{opacity:.85; transform:translateY(-1px);}
+
+  .pocket-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:20px;
+  }
+
+  .pocket-card{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    padding:22px;
+    border:1px solid var(--neutral-border);
+    border-radius:var(--radius-lg);
+    background:var(--bg);
+    box-shadow:var(--shadow-card);
+    transition:transform .22s ease, box-shadow .22s ease;
+  }
+  .pocket-card:hover{
+    transform:translateY(-4px);
+    box-shadow:var(--shadow-card-hover);
+  }
+  .pocket-card-remove{
+    position:absolute;
+    top:16px;
+    right:16px;
+    width:26px;height:26px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    border:none;
+    background:var(--neutral);
+    color:var(--text-soft);
+    font-size:1rem;
+    line-height:1;
+    cursor:pointer;
+    transition:background .18s ease, color .18s ease;
+  }
+  .pocket-card-remove:hover{
+    background:var(--accent-soft);
+    color:var(--accent-strong);
+  }
+  .pocket-card-remove:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+  }
+  .pocket-card-name{
+    margin:0;
+    padding-right:32px;
+    font-size:1.02rem;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .pocket-card-category{
+    margin:0;
+    font-size:0.8rem;
+    color:var(--text-soft);
+  }
+  .pocket-card-address{
+    margin:0;
+    font-size:0.85rem;
+    color:var(--text);
+  }
+  .pocket-card-date{
+    margin:0;
+    font-size:0.78rem;
+    color:var(--text-soft);
+  }
+  .pocket-card-link{
+    align-self:flex-start;
+    margin-top:6px;
+    font-size:0.82rem;
+    font-weight:600;
+    color:var(--accent-strong);
+    text-decoration:none;
+    border-bottom:1px solid var(--accent);
+    padding-bottom:1px;
+  }
+  .pocket-card-link:hover{opacity:.75;}
+
+  footer.site{
+    padding:24px 0 40px;
+    border-top:1px solid var(--neutral-border);
+    text-align:center;
+    font-size:0.78rem;
+    color:var(--text-soft);
+  }
+
+  /* ---------- Responsive: 345 / 768 / 1440 ---------- */
+  @media (min-width:768px){
+    .wrap{padding:0 24px;}
+    .pocket-grid{
+      grid-template-columns:repeat(2, 1fr);
+      gap:22px;
+    }
+  }
+  @media (min-width:1440px){
+    .pocket-grid{
+      grid-template-columns:repeat(3, 1fr);
+      gap:24px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="logo" href="index.html">I can <span>eat</span></a>
+    <div class="header-actions">
+      <span class="page-title">맛집주머니</span>
+      <div id="authSlot"></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="pocket-section">
+    <h1 class="pocket-heading">내가 담은 맛집</h1>
+    <p class="status-msg" id="statusMsg" hidden></p>
+    <div class="pocket-empty" id="pocketEmpty" hidden>
+      <p>아직 담은 맛집이 없어요. 검색하러 가볼까요?</p>
+      <a class="pocket-empty-btn" href="index.html#search">검색하러 가기</a>
+    </div>
+    <div class="pocket-grid" id="pocketGrid"></div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">I can eat — 내가 담은 맛집은 나만 볼 수 있어요.</div>
+</footer>
+
+<script src="auth.js"></script>
+<script>
+(function(){
+  var hour = new Date().getHours();
+  var daypart = (hour >= 6 && hour < 17) ? 'lunch' : 'dinner';
+  document.documentElement.setAttribute('data-daypart', daypart);
+})();
+
+(function(){
+  'use strict';
+
+  var statusMsg = document.getElementById('statusMsg');
+  var pocketEmpty = document.getElementById('pocketEmpty');
+  var pocketGrid = document.getElementById('pocketGrid');
+
+  function showStatus(text, modifier){
+    statusMsg.hidden = false;
+    statusMsg.textContent = text;
+    statusMsg.className = 'status-msg' + (modifier ? ' status-msg--' + modifier : '');
+  }
+
+  function hideStatus(){
+    statusMsg.hidden = true;
+    statusMsg.textContent = '';
+    statusMsg.className = 'status-msg';
+  }
+
+  function showEmpty(show){
+    pocketEmpty.hidden = !show;
+  }
+
+  function clearGrid(){
+    pocketGrid.innerHTML = '';
+  }
+
+  function formatDate(iso){
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '.' + mm + '.' + dd + ' 담음';
+  }
+
+  function buildGoogleMapsUrl(row){
+    var query = (row.lat != null && row.lng != null)
+      ? (row.lat + ',' + row.lng)
+      : [row.place_name, row.address].filter(Boolean).join(' ');
+    return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
+  }
+
+  function removeRow(row, card, removeBtn, supa){
+    removeBtn.disabled = true;
+    supa.from('saved_restaurants').delete().eq('id', row.id).then(function(res){
+      if (res.error) {
+        removeBtn.disabled = false;
+        console.error('[맛집주머니] 삭제 실패:', res.error.message);
+        alert('삭제하지 못했어요. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      card.remove();
+      if (!pocketGrid.querySelector('.pocket-card')) showEmpty(true);
+    });
+  }
+
+  function renderCard(row, supa){
+    var card = document.createElement('article');
+    card.className = 'pocket-card';
+
+    var removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'pocket-card-remove';
+    removeBtn.setAttribute('aria-label', '맛집주머니에서 삭제');
+    removeBtn.textContent = '×';
+    removeBtn.addEventListener('click', function(){
+      removeRow(row, card, removeBtn, supa);
+    });
+    card.appendChild(removeBtn);
+
+    var name = document.createElement('h3');
+    name.className = 'pocket-card-name';
+    name.textContent = row.place_name || '이름 없음';
+    card.appendChild(name);
+
+    var address = document.createElement('p');
+    address.className = 'pocket-card-address';
+    address.textContent = row.address || '주소 정보 없음';
+    card.appendChild(address);
+
+    if (row.category_name) {
+      var category = document.createElement('p');
+      category.className = 'pocket-card-category';
+      category.textContent = row.category_name;
+      card.appendChild(category);
+    }
+
+    var date = document.createElement('p');
+    date.className = 'pocket-card-date';
+    date.textContent = formatDate(row.created_at);
+    card.appendChild(date);
+
+    var link = document.createElement('a');
+    link.className = 'pocket-card-link';
+    link.href = buildGoogleMapsUrl(row);
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = '구글맵에서 보기 →';
+    card.appendChild(link);
+
+    return card;
+  }
+
+  function loadPockets(){
+    showStatus('불러오는 중…', 'loading');
+    showEmpty(false);
+    clearGrid();
+
+    var supa = window.icaneatAuth.getClient();
+    supa.from('saved_restaurants')
+      .select('id, place_id, place_name, category_name, address, lat, lng, created_at')
+      .order('created_at', { ascending: false })
+      .then(function(res){
+        if (res.error) {
+          showStatus('목록을 불러오지 못했어요. 잠시 후 다시 시도해주세요.', 'error');
+          console.error('[맛집주머니] 조회 실패:', res.error.message);
+          return;
+        }
+
+        var rows = res.data || [];
+        if (rows.length === 0) {
+          hideStatus();
+          showEmpty(true);
+          return;
+        }
+
+        hideStatus();
+        rows.forEach(function(row){
+          pocketGrid.appendChild(renderCard(row, supa));
+        });
+      });
+  }
+
+  function showLoginRequired(){
+    clearGrid();
+    showEmpty(false);
+    showStatus('로그인이 필요합니다.', 'error');
+    window.icaneatAuth.requireLogin();
+  }
+
+  // 초기 렌더는 getSession()으로 직접 확정한 뒤 진행한다 — onChange는 auth.js의
+  // getSession()이 비동기로 끝나기 전까지 currentUser=null로 먼저 한 번 불리므로,
+  // 그 값을 그대로 쓰면 로그인 상태에서도 "로그인이 필요합니다"가 잠깐 깜빡인다.
+  var initialCheckDone = false;
+  var supa = window.icaneatAuth.getClient();
+
+  supa.auth.getSession().then(function(res){
+    initialCheckDone = true;
+    var user = res.data.session ? res.data.session.user : null;
+    if (user) loadPockets(); else showLoginRequired();
+  });
+
+  window.icaneatAuth.onChange(function(user){
+    if (!initialCheckDone) return;
+    if (user) loadPockets(); else showLoginRequired();
+  });
+})();
+</script>
+
+</body>
+</html>

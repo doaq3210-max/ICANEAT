@@ -299,6 +299,7 @@
   <div class="wrap">
     <div class="logo">I can<span> eat</span></div>
     <div class="header-actions">
+      <a class="nav-cta" href="mypage.html" id="pocketNavLink" hidden>맛집주머니</a>
       <a class="nav-cta" href="about.html">about</a>
       <div id="authSlot"></div>
     </div>
@@ -358,6 +359,10 @@
     var isLunch = hour >= 6 && hour < 17;
     document.documentElement.setAttribute('data-daypart', isLunch ? 'lunch' : 'dinner');
   })();
+
+  window.icaneatAuth.onChange(function(user){
+    document.getElementById('pocketNavLink').hidden = !user;
+  });
 
   var searchForm = document.getElementById('searchForm');
   var searchInput = document.getElementById('searchInput');
