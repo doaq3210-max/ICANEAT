@@ -693,6 +693,8 @@
     card.className = 'rest-card';
     card.dataset.placeId = doc.id || '';
     card.dataset.placeName = doc.place_name || '';
+    card.dataset.category = doc.category_name || '';
+    card.dataset.address = doc.road_address_name || doc.address_name || '';
     card.dataset.lat = doc.y || '';
     card.dataset.lng = doc.x || '';
 
@@ -1163,6 +1165,7 @@
         docs.forEach(function (doc) {
           restGrid.appendChild(renderCard(doc));
         });
+        applySavedStateToAllCards();
 
         state.page = page;
         var isEnd = meta.is_end !== undefined ? meta.is_end : true;
@@ -1200,9 +1203,95 @@
   });
 
   // "담기" 버튼: 카드가 검색/더보기로 계속 새로 추가되므로 restGrid에 이벤트 위임.
-  // 로그인한 회원만 사용 가능(비로그인 시 로그인 모달만 열림, auth.js의
-  // icaneatAuth.requireLogin() 참고). 오늘 스코프에서는 실제 저장(localStorage/서버)
-  // 없이 UI 상태 토글만 수행하며, 새로고침하거나 다시 검색하면 초기화된다.
+  // 로그인한 회원만 사용 가능하며, Supabase `saved_restaurants` 테이블에 저장한다
+  // (한 유저가 같은 가게를 두 번 담을 수 없도록 DB에 unique 제약이 걸려 있음).
+  var savedPlaceIds = new Set();
+
+  function setSaveBtnState(saveBtn, isSaved) {
+    saveBtn.classList.toggle('is-saved', isSaved);
+    saveBtn.textContent = isSaved ? '담았어요' : '담기';
+    saveBtn.setAttribute('aria-pressed', isSaved ? 'true' : 'false');
+  }
+
+  function applySavedStateToAllCards() {
+    Array.prototype.forEach.call(restGrid.querySelectorAll('.rest-card'), function (card) {
+      var btn = card.querySelector('.rest-card-save');
+      if (btn) setSaveBtnState(btn, savedPlaceIds.has(card.dataset.placeId));
+    });
+  }
+
+  function loadSavedPlaceIds() {
+    window.icaneatAuth.getClient()
+      .from('saved_restaurants')
+      .select('place_id')
+      .then(function (res) {
+        if (res.error) {
+          console.error('[담기] 저장 목록 조회 실패:', res.error.message);
+          return;
+        }
+        savedPlaceIds = new Set((res.data || []).map(function (row) { return row.place_id; }));
+        applySavedStateToAllCards();
+      });
+  }
+
+  window.icaneatAuth.onChange(function (user) {
+    if (user) {
+      loadSavedPlaceIds();
+    } else {
+      savedPlaceIds.clear();
+      applySavedStateToAllCards();
+    }
+  });
+
+  function toggleSave(saveBtn, card) {
+    if (!window.icaneatAuth.getUser()) {
+      alert('로그인이 필요합니다.');
+      window.icaneatAuth.requireLogin();
+      return;
+    }
+
+    var placeId = card.dataset.placeId;
+    if (!placeId || saveBtn.disabled) return;
+
+    var isSaved = savedPlaceIds.has(placeId);
+    saveBtn.disabled = true;
+
+    var supa = window.icaneatAuth.getClient();
+    var request = isSaved
+      ? supa.from('saved_restaurants').delete().eq('place_id', placeId)
+      : supa.from('saved_restaurants').insert({
+          place_id: placeId,
+          place_name: card.dataset.placeName || '',
+          category_name: card.dataset.category || null,
+          address: card.dataset.address || null,
+          lat: card.dataset.lat ? parseFloat(card.dataset.lat) : null,
+          lng: card.dataset.lng ? parseFloat(card.dataset.lng) : null,
+        });
+
+    request.then(function (res) {
+      saveBtn.disabled = false;
+
+      if (res.error) {
+        if (!isSaved && res.error.code === '23505') {
+          // 동시 클릭 등으로 이미 담겨있던 경우 — 담김 상태로 동기화.
+          savedPlaceIds.add(placeId);
+          setSaveBtnState(saveBtn, true);
+          return;
+        }
+        console.error('[담기] 실패:', res.error.message);
+        alert('처리 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+
+      if (isSaved) {
+        savedPlaceIds.delete(placeId);
+      } else {
+        savedPlaceIds.add(placeId);
+      }
+      setSaveBtnState(saveBtn, !isSaved);
+    });
+  }
+
   restGrid.addEventListener('click', function (e) {
     var saveBtn = e.target.closest('.rest-card-save');
     if (!saveBtn) return;
@@ -1210,11 +1299,7 @@
     e.preventDefault();
     e.stopPropagation();
 
-    if (!window.icaneatAuth.requireLogin()) return;
-
-    var isSaved = saveBtn.classList.toggle('is-saved');
-    saveBtn.textContent = isSaved ? '담았어요' : '담기';
-    saveBtn.setAttribute('aria-pressed', isSaved ? 'true' : 'false');
+    toggleSave(saveBtn, saveBtn.closest('.rest-card'));
   });
 
   // 카드 클릭: 구글 리뷰 패널을 열고 채운다. "담기"/카카오맵 링크 클릭은

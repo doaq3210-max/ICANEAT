@@ -255,6 +255,9 @@
     getUser: function () {
       return currentUser;
     },
+    getClient: function () {
+      return client;
+    },
     onChange: function (cb) {
       listeners.push(cb);
       cb(currentUser);
