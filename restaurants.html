@@ -62,7 +62,6 @@
   /* ---------- Header ---------- */
   header.site{
     padding:20px 0;
-    border-bottom:1px solid var(--neutral-border);
   }
   header.site .wrap{
     display:flex;
@@ -79,26 +78,50 @@
   }
   .logo:hover{opacity:.82;}
   .logo span{color:var(--accent-strong);}
-  .page-title{
-    font-size:0.85rem;
-    color:var(--text-soft);
-  }
   .header-actions{
     display:flex;
     align-items:center;
     gap:10px;
   }
-  .nav-cta{
-    font-size:0.85rem;
-    font-weight:600;
-    padding:9px 18px;
-    border-radius:999px;
-    background:var(--text);
-    color:#fff;
-    text-decoration:none;
-    transition:opacity .2s ease;
+
+  /* ---------- 주요 기능 바로가기 (퀵링크 칩) ---------- */
+  .quick-nav-wrap{
+    border-bottom:1px solid var(--neutral-border);
   }
-  .nav-cta:hover{opacity:.82;}
+  .quick-nav{
+    display:flex;
+    gap:8px;
+    max-width:var(--maxw);
+    margin:0 auto;
+    padding:2px 18px 14px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .quick-nav::-webkit-scrollbar{display:none;}
+  .quick-nav-item{
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:13px 18px;
+    border-radius:999px;
+    border:1px solid var(--neutral-border);
+    background:var(--bg);
+    color:var(--text-soft);
+    font-size:0.82rem;
+    font-weight:600;
+    text-decoration:none;
+    white-space:nowrap;
+    transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .quick-nav-item:hover{background:var(--neutral);}
+  .quick-nav-item.is-active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+    font-weight:700;
+  }
+  .quick-nav-item svg{flex-shrink:0;}
 
   /* ---------- Search section ---------- */
   .search-section{
@@ -271,6 +294,7 @@
   /* ---------- Responsive: 345 / 768 / 1440 ---------- */
   @media (min-width:768px){
     .wrap{padding:0 24px;}
+    .quick-nav{padding-left:24px; padding-right:24px;}
     .search-panel{padding:24px;}
     .search-bar{flex-direction:row;}
     .rest-grid{
@@ -292,12 +316,31 @@
   <div class="wrap">
     <a class="logo" href="index.html">I can <span>eat</span></a>
     <div class="header-actions">
-      <span class="page-title">맛집 검색 (베타)</span>
-      <a class="nav-cta" href="mypage.html" id="pocketNavLink">맛집주머니</a>
       <div id="authSlot"></div>
     </div>
   </div>
 </header>
+
+<nav class="quick-nav-wrap" aria-label="주요 기능 바로가기">
+  <div class="quick-nav">
+    <a class="quick-nav-item" href="index.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg>
+      홈
+    </a>
+    <a class="quick-nav-item is-active" href="restaurants.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      검색
+    </a>
+    <a class="quick-nav-item" href="mypage.html" id="navPocket">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l1 12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+      맛집주머니
+    </a>
+    <a class="quick-nav-item" href="about.html">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r="0.9" fill="currentColor" stroke="none"/></svg>
+      about
+    </a>
+  </div>
+</nav>
 
 <main class="wrap">
   <section class="search-section">
@@ -374,7 +417,7 @@
   var statusMsg = document.getElementById('statusMsg');
   var restGrid = document.getElementById('restGrid');
   var loadMoreBtn = document.getElementById('loadMoreBtn');
-  var pocketNavLink = document.getElementById('pocketNavLink');
+  var pocketNavLink = document.getElementById('navPocket');
 
   pocketNavLink.addEventListener('click', function (e) {
     if (!window.icaneatAuth.getUser()) {
