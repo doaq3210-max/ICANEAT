@@ -257,10 +257,10 @@
     max-width:640px;
     margin:0 auto;
     background:var(--bg);
-    border:1px solid var(--neutral-border);
+    border:2px solid var(--neutral-border);
     border-radius:999px;
     box-shadow:var(--shadow-card);
-    padding:6px 6px 6px 22px;
+    padding:5px 5px 5px 21px;
     transition:border-color .2s ease, box-shadow .2s ease;
   }
   .search-toolbar:focus-within{
@@ -384,7 +384,7 @@
   <div class="wrap">
     <form class="search-toolbar" id="searchForm" novalidate>
       <input type="text" id="searchInput" class="search-toolbar-input" placeholder="먹고 싶은 메뉴나 지역을 입력해보세요" autocomplete="off">
-      <button type="submit" class="search-toolbar-btn" aria-label="검색">🔍</button>
+      <button type="submit" class="search-toolbar-btn" id="searchBtn" aria-label="검색">🔍</button>
     </form>
   </div>
 </section>
@@ -614,6 +614,7 @@
 
   var searchForm = document.getElementById('searchForm');
   var searchInput = document.getElementById('searchInput');
+  var searchBtn = document.getElementById('searchBtn');
 
   searchForm.addEventListener('submit', function(e){
     e.preventDefault();
@@ -621,6 +622,26 @@
     var url = value ? 'restaurants.html?q=' + encodeURIComponent(value) : 'restaurants.html';
     window.location.href = url;
   });
+
+  (function(){
+    var DEFAULT_EMOJI = '🔍';
+    var HOVER_EMOJIS = ['🍔', '🍲', '🍕', '🍜', '🍣', '🌮'];
+    var timer = null;
+    var i = 0;
+
+    searchBtn.addEventListener('mouseenter', function(){
+      i = 0;
+      timer = setInterval(function(){
+        searchBtn.textContent = HOVER_EMOJIS[i % HOVER_EMOJIS.length];
+        i++;
+      }, 180);
+    });
+
+    searchBtn.addEventListener('mouseleave', function(){
+      clearInterval(timer);
+      searchBtn.textContent = DEFAULT_EMOJI;
+    });
+  })();
 
   if('IntersectionObserver' in window){
     var observer = new IntersectionObserver(function(entries){
