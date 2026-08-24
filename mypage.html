@@ -702,6 +702,9 @@ document.getElementById('navPocket').addEventListener('click', function(e){
   function renderCard(row, supa){
     var card = document.createElement('article');
     card.className = 'pocket-card';
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', (row.place_name || '이름 없음') + ' 내 기록 열기');
 
     var removeBtn = document.createElement('button');
     removeBtn.type = 'button';
@@ -710,6 +713,7 @@ document.getElementById('navPocket').addEventListener('click', function(e){
     removeBtn.textContent = '×';
     removeBtn.addEventListener('click', function(e){
       e.stopPropagation();
+      if (!window.confirm('맛집주머니에서 삭제할까요? 이 작업은 되돌릴 수 없어요.')) return;
       removeRow(row, card, removeBtn, supa);
     });
     card.appendChild(removeBtn);
@@ -775,6 +779,15 @@ document.getElementById('navPocket').addEventListener('click', function(e){
       if (e.target.closest('.pocket-card-visit-btn')) return;
       if (e.target.closest('.pocket-card-link')) return;
       openRecordModal(row, card, supa);
+    });
+
+    // 카드 자체가 포커스 대상일 때만 반응 — 안의 버튼/링크는 자기 자신의 키보드 동작을 그대로 쓴다.
+    card.addEventListener('keydown', function(e){
+      if (e.target !== card) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openRecordModal(row, card, supa);
+      }
     });
 
     return card;
@@ -871,6 +884,20 @@ document.getElementById('navPocket').addEventListener('click', function(e){
     activeRecordSupa = null;
   }
 
+  // 평가/한줄평을 입력만 하고 저장하지 않은 채 닫으려는 경우 확인을 받는다.
+  function hasUnsavedChanges(){
+    if (!activeRecordRow) return false;
+    var currentReview = recordReviewInput.value.trim();
+    var savedReview = activeRecordRow.review_text || '';
+    var savedRating = activeRecordRow.rating || null;
+    return pendingRating !== savedRating || currentReview !== savedReview;
+  }
+
+  function attemptCloseRecordModal(){
+    if (hasUnsavedChanges() && !window.confirm('저장하지 않은 변경사항이 있어요. 닫을까요?')) return;
+    closeRecordModal();
+  }
+
   recordRatingGroup.addEventListener('click', function(e){
     var btn = e.target.closest('.record-rating-btn');
     if (!btn) return;
@@ -880,12 +907,12 @@ document.getElementById('navPocket').addEventListener('click', function(e){
     updateRatingButtons();
   });
 
-  recordCloseBtn.addEventListener('click', closeRecordModal);
+  recordCloseBtn.addEventListener('click', attemptCloseRecordModal);
   recordModalOverlay.addEventListener('click', function(e){
-    if (e.target === recordModalOverlay) closeRecordModal();
+    if (e.target === recordModalOverlay) attemptCloseRecordModal();
   });
   document.addEventListener('keydown', function(e){
-    if (e.key === 'Escape' && isRecordOpen()) closeRecordModal();
+    if (e.key === 'Escape' && isRecordOpen()) attemptCloseRecordModal();
   });
 
   recordSaveBtn.addEventListener('click', function(){

@@ -551,6 +551,7 @@
     // 이미 선택된 하위 카테고리를 다시 누르면 해제(해당 상위 카테고리 전체 보기).
     state.subKeyword = (state.subKeyword === label) ? null : label;
     renderSubcategories();
+    syncFilterUrl();
     runSearch(1, false);
   });
 
@@ -567,8 +568,38 @@
     state.group = CATEGORY_GROUPS.filter(function (g) { return g.id === groupId; })[0] || CATEGORY_GROUPS[0];
     state.subKeyword = state.group.fixedKeyword || null;
     renderSubcategories();
+    syncFilterUrl();
     runSearch(1, false);
   });
+
+  // 선택한 카테고리/하위 카테고리를 URL 쿼리(group, sub)에 반영해 새로고침·링크 공유 시에도 유지되게 한다.
+  function syncFilterUrl(){
+    var url = new URL(window.location.href);
+    url.searchParams.set('group', state.group.id);
+    if (state.subKeyword && !state.group.fixedKeyword) {
+      url.searchParams.set('sub', state.subKeyword);
+    } else {
+      url.searchParams.delete('sub');
+    }
+    history.replaceState(null, '', url);
+  }
+
+  // 페이지 진입 시 URL의 group/sub 쿼리가 있으면 필터 상태를 복원한다.
+  (function restoreFilterFromUrl(){
+    var params = new URLSearchParams(window.location.search);
+    var groupId = params.get('group');
+    if (!groupId) return;
+    var matched = CATEGORY_GROUPS.filter(function (g) { return g.id === groupId; })[0];
+    if (!matched) return;
+
+    state.group = matched;
+    var sub = params.get('sub');
+    state.subKeyword = matched.fixedKeyword || (sub && matched.subcategories.indexOf(sub) !== -1 ? sub : null);
+
+    Array.prototype.forEach.call(categoryFilter.querySelectorAll('.filter-btn'), function (b) {
+      b.classList.toggle('is-active', b.getAttribute('data-group') === matched.id);
+    });
+  })();
 
   renderSubcategories();
 
@@ -669,6 +700,9 @@
   if (initialQuery) {
     searchInput.value = initialQuery;
   }
+
+  // 처음 렌더된 필터 상태(기본값 또는 URL에서 복원된 값)를 URL에 정확히 반영해둔다.
+  syncFilterUrl();
 
   // 초기 진입 시: 검색어가 있으면 키워드 검색, 없으면 위치 기반 기본 카테고리(음식점) 결과를 보여준다.
   runSearch(1, false);

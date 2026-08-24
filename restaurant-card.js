@@ -37,6 +37,9 @@ window.icaneatCard = (function () {
   function renderCard(doc) {
     var card = document.createElement('article');
     card.className = 'rest-card';
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', (doc.place_name || '이름 없음') + ' 리뷰 보기');
     card.dataset.placeId = doc.id || '';
     card.dataset.placeName = doc.place_name || '';
     card.dataset.category = doc.category_name || '';
@@ -639,6 +642,21 @@ window.icaneatCard = (function () {
       if (!card) return;
 
       openReviewForCard(card);
+    });
+
+    // 카드 자체가 포커스 대상일 때만 반응 — 안의 "담기" 버튼/카카오맵 링크는
+    // 자기 자신의 키보드 동작을 그대로 쓴다.
+    container.addEventListener('keydown', function (e) {
+      if (e.target.closest('.rest-card-save')) return;
+      if (e.target.closest('.rest-card-link')) return;
+
+      var card = e.target.closest('.rest-card');
+      if (!card || e.target !== card) return;
+
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openReviewForCard(card);
+      }
     });
 
     applySavedStateToAllCards();
