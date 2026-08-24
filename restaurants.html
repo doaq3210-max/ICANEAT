@@ -8,6 +8,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍚</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="auth.css">
+<link rel="stylesheet" href="restaurant-card.css">
 <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -170,6 +171,36 @@
   }
   .filter-btn.is-active:hover{background:var(--accent-soft);}
 
+  .subcategory-filter{
+    display:flex;
+    gap:6px;
+    margin-top:10px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:2px;
+  }
+  .subcategory-filter::-webkit-scrollbar{display:none;}
+  .chip-btn{
+    flex-shrink:0;
+    padding:6px 14px;
+    border-radius:999px;
+    border:1px solid var(--neutral-border);
+    background:var(--bg-alt);
+    color:var(--text-soft);
+    font-size:0.78rem;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .chip-btn:hover{background:var(--neutral);}
+  .chip-btn.is-active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+  .chip-btn.is-active:hover{opacity:.88;}
+
   .location-note{
     margin:14px 0 0;
     font-size:0.78rem;
@@ -201,107 +232,6 @@
     margin-top:8px;
   }
 
-  .rest-card{
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-    gap:10px;
-    padding:22px;
-    border:1px solid var(--neutral-border);
-    border-radius:var(--radius-lg);
-    background:var(--bg);
-    box-shadow:var(--shadow-card);
-    transition:transform .22s ease, box-shadow .22s ease;
-  }
-  .rest-card:hover{
-    transform:translateY(-4px);
-    box-shadow:var(--shadow-card-hover);
-  }
-  .rest-card-body{
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-  }
-  .rest-card-top{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:8px;
-  }
-  .rest-card-name{
-    margin:0;
-    font-size:1.02rem;
-    font-weight:700;
-    letter-spacing:-0.01em;
-  }
-  .rest-card-distance{
-    flex-shrink:0;
-    font-size:0.75rem;
-    font-weight:600;
-    color:var(--accent-strong);
-    background:var(--accent-soft);
-    padding:3px 9px;
-    border-radius:999px;
-    white-space:nowrap;
-  }
-  .rest-card-top-right{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    flex-shrink:0;
-  }
-  .rest-card-save{
-    flex-shrink:0;
-    padding:5px 12px;
-    border-radius:999px;
-    border:1px solid var(--accent);
-    background:var(--bg);
-    color:var(--accent-strong);
-    font-size:0.75rem;
-    font-weight:600;
-    cursor:pointer;
-    white-space:nowrap;
-    transition:background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
-  }
-  .rest-card-save:hover{
-    background:var(--accent-soft);
-    transform:translateY(-1px);
-  }
-  .rest-card-save.is-saved{
-    background:var(--accent);
-    border-color:var(--accent);
-    color:#fff;
-  }
-  .rest-card-save.is-saved:hover{
-    opacity:.85;
-  }
-  .rest-card-category{
-    margin:0;
-    font-size:0.8rem;
-    color:var(--text-soft);
-  }
-  .rest-card-address{
-    margin:2px 0 0;
-    font-size:0.85rem;
-    color:var(--text);
-  }
-  .rest-card-phone{
-    margin:0;
-    font-size:0.85rem;
-    color:var(--text-soft);
-  }
-  .rest-card-link{
-    align-self:flex-start;
-    margin-top:4px;
-    font-size:0.82rem;
-    font-weight:600;
-    color:var(--accent-strong);
-    text-decoration:none;
-    border-bottom:1px solid var(--accent);
-    padding-bottom:1px;
-  }
-  .rest-card-link:hover{opacity:.75;}
-
   .load-more-wrap{
     display:flex;
     justify-content:center;
@@ -328,207 +258,6 @@
     cursor:not-allowed;
     transform:none;
     box-shadow:none;
-  }
-
-  .rest-card.is-active-review{
-    border-color:var(--accent);
-  }
-
-  /* ---------- Review modal ---------- */
-  .review-modal-overlay{
-    position:fixed;
-    inset:0;
-    background:rgba(43,43,46,0.45);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-    z-index:100;
-  }
-  .review-modal-overlay.open{
-    display:flex;
-  }
-  .review-panel{
-    width:100%;
-    max-width:560px;
-    max-height:85vh;
-    overflow-y:auto;
-    border:1px solid var(--neutral-border);
-    border-radius:var(--radius-lg);
-    background:var(--bg-alt);
-    box-shadow:var(--shadow-card-hover);
-  }
-  .review-panel-body{
-    padding:24px;
-  }
-  .review-panel-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:16px;
-    margin-bottom:12px;
-  }
-  .review-panel-name{
-    margin:0;
-    font-size:1.05rem;
-    font-weight:700;
-    letter-spacing:-0.01em;
-  }
-  .review-panel-close{
-    flex:none;
-    width:26px;height:26px;
-    display:flex;align-items:center;justify-content:center;
-    border-radius:50%;
-    border:none;
-    background:var(--neutral);
-    color:var(--text-soft);
-    font-size:1rem;
-    line-height:1;
-    cursor:pointer;
-    transition:background .18s ease, color .18s ease;
-  }
-  .review-panel-close:hover{
-    background:var(--accent-soft);
-    color:var(--accent-strong);
-  }
-  .review-panel-rating{
-    margin:0 0 16px;
-    font-size:0.9rem;
-    color:var(--text-soft);
-  }
-  .review-panel-status{
-    text-align:center;
-    padding:24px 0;
-    color:var(--text-soft);
-    font-size:0.9rem;
-  }
-  .review-panel-status--error{
-    color:var(--accent-strong);
-  }
-  .review-list{
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-    margin:0;
-    padding:0;
-    list-style:none;
-  }
-  .review-item{
-    border-top:1px solid var(--neutral-border);
-    padding-top:14px;
-  }
-  .review-item-meta{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    font-size:0.8rem;
-    color:var(--text-soft);
-    margin-bottom:4px;
-  }
-  .review-item-author{
-    font-weight:600;
-    color:var(--text);
-  }
-  .review-item-text{
-    margin:0;
-    font-size:0.88rem;
-    color:var(--text);
-  }
-  .review-text-toggle{
-    margin-top:4px;
-    padding:0;
-    border:none;
-    background:none;
-    font-size:0.82rem;
-    font-weight:600;
-    color:var(--accent-strong);
-    cursor:pointer;
-  }
-  .review-text-toggle:hover{opacity:.75;}
-  .review-panel-link{
-    display:inline-block;
-    margin-top:18px;
-    font-size:0.85rem;
-    font-weight:600;
-    color:var(--accent-strong);
-    text-decoration:none;
-    border-bottom:1px solid var(--accent);
-    padding-bottom:1px;
-  }
-  .review-panel-link:hover{opacity:.75;}
-
-  /* ---------- AI 분석 ---------- */
-  .ai-section{
-    margin-top:20px;
-    padding-top:18px;
-    border-top:1px solid var(--neutral-border);
-  }
-  .ai-section-title{
-    margin:0 0 12px;
-    font-size:0.8rem;
-    font-weight:700;
-    color:var(--text-soft);
-  }
-  .sentiment-bar{
-    display:flex;
-    height:10px;
-    border-radius:999px;
-    overflow:hidden;
-    background:var(--neutral);
-  }
-  .sentiment-bar-seg.positive{ background:#6FAF7C; }
-  .sentiment-bar-seg.neutral{ background:#E3C24D; }
-  .sentiment-bar-seg.negative{ background:#C6706A; }
-  .sentiment-legend{
-    display:flex;
-    gap:14px;
-    flex-wrap:wrap;
-    margin-top:8px;
-    font-size:0.78rem;
-    color:var(--text-soft);
-  }
-  .sentiment-legend-dot{
-    width:8px;height:8px;
-    border-radius:50%;
-    display:inline-block;
-    margin-right:4px;
-  }
-  .sentiment-legend-dot.positive{ background:#6FAF7C; }
-  .sentiment-legend-dot.neutral{ background:#E3C24D; }
-  .sentiment-legend-dot.negative{ background:#C6706A; }
-  .wordcloud-wrap{
-    margin-top:18px;
-  }
-  .wordcloud-canvas{
-    width:100%;
-    display:block;
-  }
-  .ai-summary-bubble{
-    position:relative;
-    margin-top:22px;
-    background:var(--bg);
-    border:1px solid var(--neutral-border);
-    border-radius:var(--radius-md);
-    padding:14px 16px;
-    font-size:0.9rem;
-  }
-  .ai-summary-bubble:before{
-    content:'';
-    position:absolute;
-    top:-7px;
-    left:24px;
-    width:14px;height:14px;
-    background:var(--bg);
-    border-left:1px solid var(--neutral-border);
-    border-top:1px solid var(--neutral-border);
-    transform:rotate(45deg);
-  }
-  .ai-summary-label{
-    display:block;
-    margin-bottom:6px;
-    font-size:0.75rem;
-    font-weight:700;
-    color:var(--accent-strong);
   }
 
   footer.site{
@@ -585,10 +314,11 @@
       </form>
 
       <div class="category-filter" id="categoryFilter" role="group" aria-label="카테고리 필터">
-        <button type="button" class="filter-btn is-active" data-category="">전체</button>
-        <button type="button" class="filter-btn" data-category="FD6">음식점</button>
-        <button type="button" class="filter-btn" data-category="CE7">카페</button>
+        <button type="button" class="filter-btn is-active" data-group="restaurant">음식점</button>
+        <button type="button" class="filter-btn" data-group="cafe">카페+디저트</button>
+        <button type="button" class="filter-btn" data-group="bar">주점</button>
       </div>
+      <div class="subcategory-filter" id="subcategoryFilter" role="group" aria-label="세부 카테고리 필터" hidden></div>
 
       <p class="location-note" id="locationNote">현재 위치를 확인하는 중입니다…</p>
     </div>
@@ -600,12 +330,6 @@
     <div class="load-more-wrap">
       <button type="button" class="load-more-btn" id="loadMoreBtn" hidden>더 보기</button>
     </div>
-
-    <div class="review-modal-overlay" id="reviewModalOverlay">
-      <div class="review-panel" id="reviewPanel">
-        <div class="review-panel-body" id="reviewPanelBody"></div>
-      </div>
-    </div>
   </section>
 </main>
 
@@ -614,6 +338,7 @@
 </footer>
 
 <script src="auth.js"></script>
+<script src="restaurant-card.js"></script>
 <script>
 (function(){
   // index.html과 동일한 시간대별 액센트 전환 로직 (이 페이지는 별도 파일이라 자체적으로 적용 필요)
@@ -626,18 +351,25 @@
   'use strict';
 
   var PROXY_BASE = '/api/kakao-search';
-  var REVIEWS_BASE = '/api/google-reviews';
-  var AI_ANALYZE_BASE = '/api/ai-analyze';
-  var REVIEW_CACHE_PREFIX = 'icaneat:reviews:';
-  var AI_CACHE_PREFIX = 'icaneat:ai:';
-  var REVIEW_TEXT_TRUNCATE_LEN = 130;
   var SEOUL_CITY_HALL = { lat: 37.532600, lng: 127.024612 };
   var RADIUS_M = 20000;
   var PAGE_SIZE = 15;
 
+  // 카카오 로컬 API에는 '주점' 전용 category_group_code나 한식/중식 같은 하위 카테고리
+  // 코드가 없어(음식점=FD6, 카페=CE7만 존재), 하위 카테고리는 category_group_code에
+  // 키워드(query)를 함께 보내 좁히는 방식으로 구현한다.
+  var CATEGORY_GROUPS = [
+    { id: 'restaurant', code: 'FD6',
+      subcategories: ['한식', '중식', '일식', '양식', '아시아', '남미/하와이', '분식', '퓨전', '기타'] },
+    { id: 'cafe', code: 'CE7',
+      subcategories: ['커피', '베이커리', '빙수+아이스크림'] },
+    { id: 'bar', code: 'FD6', fixedKeyword: '주점', subcategories: [] }
+  ];
+
   var searchForm = document.getElementById('searchForm');
   var searchInput = document.getElementById('searchInput');
   var categoryFilter = document.getElementById('categoryFilter');
+  var subcategoryFilter = document.getElementById('subcategoryFilter');
   var locationNote = document.getElementById('locationNote');
   var statusMsg = document.getElementById('statusMsg');
   var restGrid = document.getElementById('restGrid');
@@ -651,9 +383,11 @@
     }
   });
 
+  window.icaneatCard.mount(restGrid);
+
   var state = {
-    category: '',      // '', 'FD6', 'CE7'
-    keyword: '',
+    group: CATEGORY_GROUPS[0],   // 음식점(FD6) 기본 선택
+    subKeyword: null,            // 하위 카테고리(또는 주점의 고정 키워드)
     page: 1,
     loading: false
   };
@@ -701,421 +435,58 @@
     statusMsg.className = 'status-msg';
   }
 
-  function formatDistance(meters) {
-    var n = parseInt(meters, 10);
-    if (!n || isNaN(n) || n <= 0) return null;
-    if (n < 1000) return n + 'm';
-    return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'km';
+  // 카카오 검색 키워드로 보내기 전 "/", "+" 등을 공백으로 바꿔 관련도를 높인다.
+  function normalizeKeyword(word) {
+    return word.replace(/[/+]/g, ' ').replace(/\s+/g, ' ').trim();
   }
 
-  function renderCard(doc) {
-    var card = document.createElement('article');
-    card.className = 'rest-card';
-    card.dataset.placeId = doc.id || '';
-    card.dataset.placeName = doc.place_name || '';
-    card.dataset.category = doc.category_name || '';
-    card.dataset.address = doc.road_address_name || doc.address_name || '';
-    card.dataset.lat = doc.y || '';
-    card.dataset.lng = doc.x || '';
-
-    var body = document.createElement('div');
-    body.className = 'rest-card-body';
-
-    var top = document.createElement('div');
-    top.className = 'rest-card-top';
-
-    var name = document.createElement('h3');
-    name.className = 'rest-card-name';
-    name.textContent = doc.place_name || '이름 없음';
-    top.appendChild(name);
-
-    var topRight = document.createElement('div');
-    topRight.className = 'rest-card-top-right';
-
-    var distanceText = formatDistance(doc.distance);
-    if (distanceText) {
-      var distEl = document.createElement('span');
-      distEl.className = 'rest-card-distance';
-      distEl.textContent = distanceText;
-      topRight.appendChild(distEl);
-    }
-
-    var saveBtn = document.createElement('button');
-    saveBtn.type = 'button';
-    saveBtn.className = 'rest-card-save';
-    saveBtn.textContent = '담기';
-    saveBtn.setAttribute('aria-pressed', 'false');
-    topRight.appendChild(saveBtn);
-
-    top.appendChild(topRight);
-
-    body.appendChild(top);
-
-    if (doc.category_name) {
-      var category = document.createElement('p');
-      category.className = 'rest-card-category';
-      category.textContent = doc.category_name;
-      body.appendChild(category);
-    }
-
-    var address = document.createElement('p');
-    address.className = 'rest-card-address';
-    address.textContent = doc.road_address_name || doc.address_name || '주소 정보 없음';
-    body.appendChild(address);
-
-    if (doc.phone) {
-      var phone = document.createElement('p');
-      phone.className = 'rest-card-phone';
-      phone.textContent = doc.phone;
-      body.appendChild(phone);
-    }
-
-    card.appendChild(body);
-
-    if (doc.place_url) {
-      var link = document.createElement('a');
-      link.className = 'rest-card-link';
-      link.href = doc.place_url;
-      link.target = '_blank';
-      link.rel = 'noopener';
-      link.textContent = '카카오맵에서 보기 →';
-      card.appendChild(link);
-    }
-
-    return card;
-  }
-
-  var reviewModalOverlay = document.getElementById('reviewModalOverlay');
-  var reviewPanel = document.getElementById('reviewPanel');
-  var reviewPanelBody = document.getElementById('reviewPanelBody');
-  var activeReviewCard = null;
-
-  function isPanelOpen() {
-    return reviewModalOverlay.classList.contains('open');
-  }
-
-  function openPanel() {
-    reviewModalOverlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closePanel() {
-    reviewModalOverlay.classList.remove('open');
-    document.body.style.overflow = '';
-    if (activeReviewCard) {
-      activeReviewCard.classList.remove('is-active-review');
-      activeReviewCard = null;
-    }
-  }
-
-  reviewModalOverlay.addEventListener('click', function (e) {
-    if (e.target === reviewModalOverlay) closePanel();
-  });
-
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && isPanelOpen()) closePanel();
-  });
-
-  function buildCacheKey(card, prefix) {
-    var id = card.dataset.placeId;
-    if (id) return prefix + 'id:' + id;
-    var lat = parseFloat(card.dataset.lat);
-    var lng = parseFloat(card.dataset.lng);
-    return prefix + encodeURIComponent(card.dataset.placeName) + ':' +
-      lat.toFixed(4) + ',' + lng.toFixed(4);
-  }
-
-  function reviewCacheKey(card) {
-    return buildCacheKey(card, REVIEW_CACHE_PREFIX);
-  }
-
-  function aiCacheKey(card) {
-    return buildCacheKey(card, AI_CACHE_PREFIX);
-  }
-
-  function getCachedReview(key) {
-    try {
-      var raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function setCachedReview(key, data) {
-    try {
-      localStorage.setItem(key, JSON.stringify(data));
-    } catch (e) {
-      // 저장 공간 부족, 프라이빗 모드 등 — 캐시 없이 조용히 진행.
-    }
-  }
-
-  function buildPanelHeader(name) {
-    var header = document.createElement('div');
-    header.className = 'review-panel-header';
-
-    var h3 = document.createElement('h3');
-    h3.className = 'review-panel-name';
-    h3.textContent = name || '';
-    header.appendChild(h3);
-
-    var closeBtn = document.createElement('button');
-    closeBtn.type = 'button';
-    closeBtn.className = 'review-panel-close';
-    closeBtn.setAttribute('aria-label', '리뷰 패널 닫기');
-    closeBtn.textContent = '×';
-    header.appendChild(closeBtn);
-
-    return header;
-  }
-
-  function renderPanelLoading(name) {
-    reviewPanelBody.innerHTML = '';
-    reviewPanelBody.appendChild(buildPanelHeader(name));
-    var status = document.createElement('p');
-    status.className = 'review-panel-status';
-    status.textContent = '리뷰를 불러오는 중...';
-    reviewPanelBody.appendChild(status);
-  }
-
-  function renderPanelNotFound(name) {
-    reviewPanelBody.innerHTML = '';
-    reviewPanelBody.appendChild(buildPanelHeader(name));
-    var status = document.createElement('p');
-    status.className = 'review-panel-status';
-    status.textContent = '리뷰를 찾을 수 없어요.';
-    reviewPanelBody.appendChild(status);
-  }
-
-  function renderPanelError(name) {
-    reviewPanelBody.innerHTML = '';
-    reviewPanelBody.appendChild(buildPanelHeader(name));
-    var status = document.createElement('p');
-    status.className = 'review-panel-status review-panel-status--error';
-    status.textContent = '리뷰를 불러오지 못했어요. 잠시 후 다시 시도해주세요.';
-    reviewPanelBody.appendChild(status);
-  }
-
-  function renderPanelResult(card, data) {
-    reviewPanelBody.innerHTML = '';
-    reviewPanelBody.appendChild(buildPanelHeader(data.name));
-
-    var ratingP = document.createElement('p');
-    ratingP.className = 'review-panel-rating';
-    ratingP.textContent = (data.rating != null)
-      ? '⭐ ' + data.rating.toFixed(1) + ' (' + (data.userRatingCount || 0) + '개 리뷰)'
-      : '평점 정보 없음';
-    reviewPanelBody.appendChild(ratingP);
-
-    var list = document.createElement('ul');
-    list.className = 'review-list';
-
-    (data.reviews || []).forEach(function (r) {
-      var li = document.createElement('li');
-      li.className = 'review-item';
-
-      var meta = document.createElement('div');
-      meta.className = 'review-item-meta';
-
-      var author = document.createElement('span');
-      author.className = 'review-item-author';
-      author.textContent = r.author || '익명';
-      meta.appendChild(author);
-
-      var ratingSpan = document.createElement('span');
-      ratingSpan.textContent = '★'.repeat(Math.round(r.rating || 0));
-      meta.appendChild(ratingSpan);
-
-      var timeSpan = document.createElement('span');
-      timeSpan.textContent = r.relativeTime || '';
-      meta.appendChild(timeSpan);
-
-      li.appendChild(meta);
-
-      var text = document.createElement('p');
-      text.className = 'review-item-text';
-      var fullText = r.text || '';
-      li.appendChild(text);
-
-      if (fullText.length > REVIEW_TEXT_TRUNCATE_LEN) {
-        var truncated = fullText.slice(0, REVIEW_TEXT_TRUNCATE_LEN) + '…';
-        text.textContent = truncated;
-
-        var toggle = document.createElement('button');
-        toggle.type = 'button';
-        toggle.className = 'review-text-toggle';
-        toggle.textContent = '더보기';
-        var expanded = false;
-        toggle.addEventListener('click', function () {
-          expanded = !expanded;
-          text.textContent = expanded ? fullText : truncated;
-          toggle.textContent = expanded ? '접기' : '더보기';
-        });
-        li.appendChild(toggle);
-      } else {
-        text.textContent = fullText;
-      }
-
-      list.appendChild(li);
-    });
-
-    reviewPanelBody.appendChild(list);
-
-    if ((data.reviews || []).length > 0) {
-      var aiRefs = buildAiSection();
-      reviewPanelBody.appendChild(aiRefs.section);
-      renderAiLoading(aiRefs);
-      runAiAnalysis(card, data, aiRefs);
-    }
-
-    if (data.mapsUri) {
-      var link = document.createElement('a');
-      link.className = 'review-panel-link';
-      link.href = data.mapsUri;
-      link.target = '_blank';
-      link.rel = 'noopener';
-      link.textContent = '구글 지도에서 전체 리뷰 보기 →';
-      reviewPanelBody.appendChild(link);
-    }
-  }
-
-  function buildAiSection() {
-    var section = document.createElement('div');
-    section.className = 'ai-section';
-
-    var title = document.createElement('p');
-    title.className = 'ai-section-title';
-    title.textContent = 'AI 리뷰 분석';
-    section.appendChild(title);
-
-    var body = document.createElement('div');
-    body.className = 'ai-section-body';
-    section.appendChild(body);
-
-    return { section: section, body: body };
-  }
-
-  function renderAiLoading(refs) {
-    refs.body.innerHTML = '';
-    var status = document.createElement('p');
-    status.className = 'review-panel-status';
-    status.textContent = 'AI가 분석하는 중...';
-    refs.body.appendChild(status);
-  }
-
-  function renderAiError(refs) {
-    refs.body.innerHTML = '';
-    var status = document.createElement('p');
-    status.className = 'review-panel-status review-panel-status--error';
-    status.textContent = 'AI 분석을 불러오지 못했어요.';
-    refs.body.appendChild(status);
-  }
-
-  function renderAiResult(refs, result) {
-    refs.body.innerHTML = '';
-
-    var sentiment = result.sentiment || {};
-    var pos = sentiment.positive || 0;
-    var neu = sentiment.neutral || 0;
-    var neg = sentiment.negative || 0;
-    var total = pos + neu + neg || 1;
-
-    var bar = document.createElement('div');
-    bar.className = 'sentiment-bar';
-    [
-      ['positive', pos],
-      ['neutral', neu],
-      ['negative', neg],
-    ].forEach(function (entry) {
-      if (entry[1] <= 0) return;
-      var seg = document.createElement('div');
-      seg.className = 'sentiment-bar-seg ' + entry[0];
-      seg.style.flexBasis = (entry[1] / total * 100) + '%';
-      bar.appendChild(seg);
-    });
-    refs.body.appendChild(bar);
-
-    var legend = document.createElement('div');
-    legend.className = 'sentiment-legend';
-    [
-      ['positive', '긍정', pos],
-      ['neutral', '보통', neu],
-      ['negative', '부정', neg],
-    ].forEach(function (entry) {
-      var item = document.createElement('span');
-      var dot = document.createElement('span');
-      dot.className = 'sentiment-legend-dot ' + entry[0];
-      item.appendChild(dot);
-      item.appendChild(document.createTextNode(entry[1] + ' ' + entry[2]));
-      legend.appendChild(item);
-    });
-    refs.body.appendChild(legend);
-
-    var keywords = Array.isArray(result.keywords) ? result.keywords : [];
-    if (keywords.length > 0) {
-      var wcWrap = document.createElement('div');
-      wcWrap.className = 'wordcloud-wrap';
-      var canvas = document.createElement('canvas');
-      canvas.className = 'wordcloud-canvas';
-      wcWrap.appendChild(canvas);
-      refs.body.appendChild(wcWrap);
-
-      canvas.width = reviewPanelBody.clientWidth || 320;
-      canvas.height = 220;
-
-      if (window.WordCloud) {
-        window.WordCloud(canvas, {
-          list: keywords.map(function (k) { return [k.word, k.score || 1]; }),
-          weightFactor: function (size) { return size * 5 + 14; },
-          fontFamily: "'Pretendard Variable','Pretendard',sans-serif",
-          backgroundColor: 'transparent',
-          color: function (word) {
-            var kw = keywords.filter(function (k) { return k.word === word; })[0];
-            return kw && kw.sentiment === 'negative' ? '#C6544B' : '#4C9A6A';
-          },
-        });
-      }
-    }
-
-    if (result.summary) {
-      var bubble = document.createElement('div');
-      bubble.className = 'ai-summary-bubble';
-      var label = document.createElement('span');
-      label.className = 'ai-summary-label';
-      label.textContent = 'AI 총평';
-      bubble.appendChild(label);
-      bubble.appendChild(document.createTextNode(result.summary));
-      refs.body.appendChild(bubble);
-    }
-  }
-
-  function runAiAnalysis(card, data, refs) {
-    var key = aiCacheKey(card);
-    var cached = getCachedReview(key);
-    if (cached) {
-      renderAiResult(refs, cached);
+  function renderSubcategories() {
+    subcategoryFilter.innerHTML = '';
+    var subs = state.group.subcategories;
+    if (!subs || subs.length === 0) {
+      subcategoryFilter.hidden = true;
       return;
     }
-
-    fetch(AI_ANALYZE_BASE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: card.dataset.placeName,
-        reviews: data.reviews.map(function (r) { return { text: r.text, rating: r.rating }; }),
-      }),
-    })
-      .then(function (res) { return res.json(); })
-      .then(function (result) {
-        if (activeReviewCard !== card) return;
-        if (result.error) throw new Error(result.error);
-        setCachedReview(key, result);
-        renderAiResult(refs, result);
-      })
-      .catch(function () {
-        if (activeReviewCard === card) renderAiError(refs);
-      });
+    subcategoryFilter.hidden = false;
+    subs.forEach(function (label) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'chip-btn';
+      if (state.subKeyword === label) chip.classList.add('is-active');
+      chip.textContent = label;
+      chip.dataset.sub = label;
+      subcategoryFilter.appendChild(chip);
+    });
   }
+
+  subcategoryFilter.addEventListener('click', function (e) {
+    var chip = e.target.closest('.chip-btn');
+    if (!chip) return;
+
+    var label = chip.dataset.sub;
+    // 이미 선택된 하위 카테고리를 다시 누르면 해제(해당 상위 카테고리 전체 보기).
+    state.subKeyword = (state.subKeyword === label) ? null : label;
+    renderSubcategories();
+    runSearch(1, false);
+  });
+
+  categoryFilter.addEventListener('click', function (e) {
+    var btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+
+    Array.prototype.forEach.call(categoryFilter.querySelectorAll('.filter-btn'), function (b) {
+      b.classList.remove('is-active');
+    });
+    btn.classList.add('is-active');
+
+    var groupId = btn.getAttribute('data-group');
+    state.group = CATEGORY_GROUPS.filter(function (g) { return g.id === groupId; })[0] || CATEGORY_GROUPS[0];
+    state.subKeyword = state.group.fixedKeyword || null;
+    renderSubcategories();
+    runSearch(1, false);
+  });
+
+  renderSubcategories();
 
   function setLoadingUi(isLoading) {
     state.loading = isLoading;
@@ -1130,12 +501,13 @@
     if (!append) {
       restGrid.innerHTML = '';
       loadMoreBtn.hidden = true;
-      closePanel();
+      window.icaneatCard.closePanel();
     }
     showStatus('검색 중입니다…', 'loading');
 
-    var keyword = searchInput.value.trim();
-    state.keyword = keyword;
+    var typedKeyword = searchInput.value.trim();
+    var subKeyword = state.subKeyword ? normalizeKeyword(state.subKeyword) : '';
+    var keyword = [typedKeyword, subKeyword].filter(Boolean).join(' ');
 
     var buildAndFetch = function (params) {
       params.set('page', String(page));
@@ -1156,12 +528,12 @@
     if (keyword) {
       var params = new URLSearchParams();
       params.set('query', keyword);
-      if (state.category) params.set('category_group_code', state.category);
+      params.set('category_group_code', state.group.code);
       paramsPromise = Promise.resolve(params);
     } else {
       paramsPromise = getLocation().then(function (loc) {
         var p = new URLSearchParams();
-        p.set('category_group_code', state.category || 'FD6');
+        p.set('category_group_code', state.group.code);
         p.set('x', String(loc.lng));
         p.set('y', String(loc.lat));
         p.set('radius', String(RADIUS_M));
@@ -1183,9 +555,8 @@
         }
 
         docs.forEach(function (doc) {
-          restGrid.appendChild(renderCard(doc));
+          restGrid.appendChild(window.icaneatCard.renderCard(doc));
         });
-        applySavedStateToAllCards();
 
         state.page = page;
         var isEnd = meta.is_end !== undefined ? meta.is_end : true;
@@ -1205,181 +576,8 @@
     runSearch(1, false);
   });
 
-  categoryFilter.addEventListener('click', function (e) {
-    var btn = e.target.closest('.filter-btn');
-    if (!btn) return;
-
-    Array.prototype.forEach.call(categoryFilter.querySelectorAll('.filter-btn'), function (b) {
-      b.classList.remove('is-active');
-    });
-    btn.classList.add('is-active');
-
-    state.category = btn.getAttribute('data-category') || '';
-    runSearch(1, false);
-  });
-
   loadMoreBtn.addEventListener('click', function () {
     runSearch(state.page + 1, true);
-  });
-
-  // "담기" 버튼: 카드가 검색/더보기로 계속 새로 추가되므로 restGrid에 이벤트 위임.
-  // 로그인한 회원만 사용 가능하며, Supabase `saved_restaurants` 테이블에 저장한다
-  // (한 유저가 같은 가게를 두 번 담을 수 없도록 DB에 unique 제약이 걸려 있음).
-  var savedPlaceIds = new Set();
-
-  function setSaveBtnState(saveBtn, isSaved) {
-    saveBtn.classList.toggle('is-saved', isSaved);
-    saveBtn.textContent = isSaved ? '담았어요' : '담기';
-    saveBtn.setAttribute('aria-pressed', isSaved ? 'true' : 'false');
-  }
-
-  function applySavedStateToAllCards() {
-    Array.prototype.forEach.call(restGrid.querySelectorAll('.rest-card'), function (card) {
-      var btn = card.querySelector('.rest-card-save');
-      if (btn) setSaveBtnState(btn, savedPlaceIds.has(card.dataset.placeId));
-    });
-  }
-
-  function loadSavedPlaceIds() {
-    window.icaneatAuth.getClient()
-      .from('saved_restaurants')
-      .select('place_id')
-      .then(function (res) {
-        if (res.error) {
-          console.error('[담기] 저장 목록 조회 실패:', res.error.message);
-          return;
-        }
-        savedPlaceIds = new Set((res.data || []).map(function (row) { return row.place_id; }));
-        applySavedStateToAllCards();
-      });
-  }
-
-  window.icaneatAuth.onChange(function (user) {
-    if (user) {
-      loadSavedPlaceIds();
-    } else {
-      savedPlaceIds.clear();
-      applySavedStateToAllCards();
-    }
-  });
-
-  function toggleSave(saveBtn, card) {
-    if (!window.icaneatAuth.getUser()) {
-      alert('로그인이 필요합니다.');
-      window.icaneatAuth.requireLogin();
-      return;
-    }
-
-    var placeId = card.dataset.placeId;
-    if (!placeId || saveBtn.disabled) return;
-
-    var isSaved = savedPlaceIds.has(placeId);
-    saveBtn.disabled = true;
-
-    var supa = window.icaneatAuth.getClient();
-    var request = isSaved
-      ? supa.from('saved_restaurants').delete().eq('place_id', placeId)
-      : supa.from('saved_restaurants').insert({
-          place_id: placeId,
-          place_name: card.dataset.placeName || '',
-          category_name: card.dataset.category || null,
-          address: card.dataset.address || null,
-          lat: card.dataset.lat ? parseFloat(card.dataset.lat) : null,
-          lng: card.dataset.lng ? parseFloat(card.dataset.lng) : null,
-        });
-
-    request.then(function (res) {
-      saveBtn.disabled = false;
-
-      if (res.error) {
-        if (!isSaved && res.error.code === '23505') {
-          // 동시 클릭 등으로 이미 담겨있던 경우 — 담김 상태로 동기화.
-          savedPlaceIds.add(placeId);
-          setSaveBtnState(saveBtn, true);
-          return;
-        }
-        console.error('[담기] 실패:', res.error.message);
-        alert('처리 중 문제가 발생했어요. 잠시 후 다시 시도해주세요.');
-        return;
-      }
-
-      if (isSaved) {
-        savedPlaceIds.delete(placeId);
-      } else {
-        savedPlaceIds.add(placeId);
-      }
-      setSaveBtnState(saveBtn, !isSaved);
-    });
-  }
-
-  restGrid.addEventListener('click', function (e) {
-    var saveBtn = e.target.closest('.rest-card-save');
-    if (!saveBtn) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    toggleSave(saveBtn, saveBtn.closest('.rest-card'));
-  });
-
-  // 카드 클릭: 구글 리뷰 패널을 열고 채운다. "담기"/카카오맵 링크 클릭은
-  // 각자의 동작(토글/이동)이 있으므로 여기서는 무시한다.
-  restGrid.addEventListener('click', function (e) {
-    if (e.target.closest('.rest-card-save')) return;
-    if (e.target.closest('.rest-card-link')) return;
-
-    var card = e.target.closest('.rest-card');
-    if (!card) return;
-
-    if (activeReviewCard === card && isPanelOpen()) {
-      closePanel();
-      return;
-    }
-
-    if (activeReviewCard) {
-      activeReviewCard.classList.remove('is-active-review');
-    }
-    activeReviewCard = card;
-    card.classList.add('is-active-review');
-    openPanel();
-
-    var key = reviewCacheKey(card);
-    var cached = getCachedReview(key);
-    if (cached) {
-      if (cached.found) {
-        renderPanelResult(card, cached);
-      } else {
-        renderPanelNotFound(card.dataset.placeName);
-      }
-      return;
-    }
-
-    renderPanelLoading(card.dataset.placeName);
-
-    var params = new URLSearchParams();
-    params.set('name', card.dataset.placeName);
-    params.set('lat', card.dataset.lat);
-    params.set('lng', card.dataset.lng);
-
-    fetch(REVIEWS_BASE + '?' + params.toString())
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        if (activeReviewCard !== card) return;
-        if (data.error) throw new Error(data.error);
-        setCachedReview(key, data);
-        if (data.found) {
-          renderPanelResult(card, data);
-        } else {
-          renderPanelNotFound(card.dataset.placeName);
-        }
-      })
-      .catch(function () {
-        if (activeReviewCard === card) renderPanelError(card.dataset.placeName);
-      });
-  });
-
-  reviewPanel.addEventListener('click', function (e) {
-    if (e.target.closest('.review-panel-close')) closePanel();
   });
 
   // index.html 검색창에서 ?q=검색어로 넘어온 경우, 그 검색어로 바로 검색한다.
@@ -1388,7 +586,7 @@
     searchInput.value = initialQuery;
   }
 
-  // 초기 진입 시: 검색어가 있으면 키워드 검색, 없으면 위치 기반 기본 카테고리(전체→FD6) 결과를 보여준다.
+  // 초기 진입 시: 검색어가 있으면 키워드 검색, 없으면 위치 기반 기본 카테고리(음식점) 결과를 보여준다.
   runSearch(1, false);
 })();
 </script>

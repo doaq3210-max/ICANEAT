@@ -1,0 +1,305 @@
+/* restaurant-card.css — index.html / restaurants.html 공용
+   맛집 카드(renderCard)와 구글 리뷰+AI 분석 모달의 스타일.
+   호스트 페이지가 :root에 선언한 디자인 토큰(--bg, --accent* 등)을 그대로 사용한다. */
+
+/* ---------- 맛집 카드 ---------- */
+.rest-card{
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:10px;
+  padding:22px;
+  border:1px solid var(--neutral-border);
+  border-radius:var(--radius-lg);
+  background:var(--bg);
+  box-shadow:var(--shadow-card);
+  transition:transform .22s ease, box-shadow .22s ease;
+}
+.rest-card:hover{
+  transform:translateY(-4px);
+  box-shadow:var(--shadow-card-hover);
+}
+.rest-card-body{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.rest-card-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:8px;
+}
+.rest-card-name{
+  margin:0;
+  font-size:1.02rem;
+  font-weight:700;
+  letter-spacing:-0.01em;
+}
+.rest-card-distance{
+  flex-shrink:0;
+  font-size:0.75rem;
+  font-weight:600;
+  color:var(--accent-strong);
+  background:var(--accent-soft);
+  padding:3px 9px;
+  border-radius:999px;
+  white-space:nowrap;
+}
+.rest-card-top-right{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-shrink:0;
+}
+.rest-card-save{
+  flex-shrink:0;
+  padding:5px 12px;
+  border-radius:999px;
+  border:1px solid var(--accent);
+  background:var(--bg);
+  color:var(--accent-strong);
+  font-size:0.75rem;
+  font-weight:600;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+}
+.rest-card-save:hover{
+  background:var(--accent-soft);
+  transform:translateY(-1px);
+}
+.rest-card-save.is-saved{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#fff;
+}
+.rest-card-save.is-saved:hover{
+  opacity:.85;
+}
+.rest-card-category{
+  margin:0;
+  font-size:0.8rem;
+  color:var(--text-soft);
+}
+.rest-card-address{
+  margin:2px 0 0;
+  font-size:0.85rem;
+  color:var(--text);
+}
+.rest-card-phone{
+  margin:0;
+  font-size:0.85rem;
+  color:var(--text-soft);
+}
+.rest-card-link{
+  align-self:flex-start;
+  margin-top:4px;
+  font-size:0.82rem;
+  font-weight:600;
+  color:var(--accent-strong);
+  text-decoration:none;
+  border-bottom:1px solid var(--accent);
+  padding-bottom:1px;
+}
+.rest-card-link:hover{opacity:.75;}
+.rest-card.is-active-review{
+  border-color:var(--accent);
+}
+
+/* ---------- Review modal (구글 리뷰 + AI 분석) ---------- */
+.review-modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(43,43,46,0.45);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:100;
+}
+.review-modal-overlay.open{
+  display:flex;
+}
+.review-panel{
+  width:100%;
+  max-width:560px;
+  max-height:85vh;
+  overflow-y:auto;
+  border:1px solid var(--neutral-border);
+  border-radius:var(--radius-lg);
+  background:var(--bg-alt);
+  box-shadow:var(--shadow-card-hover);
+}
+.review-panel-body{
+  padding:24px;
+}
+.review-panel-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:12px;
+}
+.review-panel-name{
+  margin:0;
+  font-size:1.05rem;
+  font-weight:700;
+  letter-spacing:-0.01em;
+}
+.review-panel-close{
+  flex:none;
+  width:26px;height:26px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+  border:none;
+  background:var(--neutral);
+  color:var(--text-soft);
+  font-size:1rem;
+  line-height:1;
+  cursor:pointer;
+  transition:background .18s ease, color .18s ease;
+}
+.review-panel-close:hover{
+  background:var(--accent-soft);
+  color:var(--accent-strong);
+}
+.review-panel-rating{
+  margin:0 0 16px;
+  font-size:0.9rem;
+  color:var(--text-soft);
+}
+.review-panel-status{
+  text-align:center;
+  padding:24px 0;
+  color:var(--text-soft);
+  font-size:0.9rem;
+}
+.review-panel-status--error{
+  color:var(--accent-strong);
+}
+.review-list{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+.review-item{
+  border-top:1px solid var(--neutral-border);
+  padding-top:14px;
+}
+.review-item-meta{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:0.8rem;
+  color:var(--text-soft);
+  margin-bottom:4px;
+}
+.review-item-author{
+  font-weight:600;
+  color:var(--text);
+}
+.review-item-text{
+  margin:0;
+  font-size:0.88rem;
+  color:var(--text);
+}
+.review-text-toggle{
+  margin-top:4px;
+  padding:0;
+  border:none;
+  background:none;
+  font-size:0.82rem;
+  font-weight:600;
+  color:var(--accent-strong);
+  cursor:pointer;
+}
+.review-text-toggle:hover{opacity:.75;}
+.review-panel-link{
+  display:inline-block;
+  margin-top:18px;
+  font-size:0.85rem;
+  font-weight:600;
+  color:var(--accent-strong);
+  text-decoration:none;
+  border-bottom:1px solid var(--accent);
+  padding-bottom:1px;
+}
+.review-panel-link:hover{opacity:.75;}
+
+/* ---------- AI 분석 ---------- */
+.ai-section{
+  margin-top:20px;
+  padding-top:18px;
+  border-top:1px solid var(--neutral-border);
+}
+.ai-section-title{
+  margin:0 0 12px;
+  font-size:0.8rem;
+  font-weight:700;
+  color:var(--text-soft);
+}
+.sentiment-bar{
+  display:flex;
+  height:10px;
+  border-radius:999px;
+  overflow:hidden;
+  background:var(--neutral);
+}
+.sentiment-bar-seg.positive{ background:#6FAF7C; }
+.sentiment-bar-seg.neutral{ background:#E3C24D; }
+.sentiment-bar-seg.negative{ background:#C6706A; }
+.sentiment-legend{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  margin-top:8px;
+  font-size:0.78rem;
+  color:var(--text-soft);
+}
+.sentiment-legend-dot{
+  width:8px;height:8px;
+  border-radius:50%;
+  display:inline-block;
+  margin-right:4px;
+}
+.sentiment-legend-dot.positive{ background:#6FAF7C; }
+.sentiment-legend-dot.neutral{ background:#E3C24D; }
+.sentiment-legend-dot.negative{ background:#C6706A; }
+.wordcloud-wrap{
+  margin-top:18px;
+}
+.wordcloud-canvas{
+  width:100%;
+  display:block;
+}
+.ai-summary-bubble{
+  position:relative;
+  margin-top:22px;
+  background:var(--bg);
+  border:1px solid var(--neutral-border);
+  border-radius:var(--radius-md);
+  padding:14px 16px;
+  font-size:0.9rem;
+}
+.ai-summary-bubble:before{
+  content:'';
+  position:absolute;
+  top:-7px;
+  left:24px;
+  width:14px;height:14px;
+  background:var(--bg);
+  border-left:1px solid var(--neutral-border);
+  border-top:1px solid var(--neutral-border);
+  transform:rotate(45deg);
+}
+.ai-summary-label{
+  display:block;
+  margin-bottom:6px;
+  font-size:0.75rem;
+  font-weight:700;
+  color:var(--accent-strong);
+}

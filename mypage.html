@@ -212,6 +212,190 @@
     padding-bottom:1px;
   }
   .pocket-card-link:hover{opacity:.75;}
+  .pocket-card-rating-badge{
+    display:inline-block;
+    align-self:flex-start;
+    margin:0;
+    padding:3px 10px;
+    border-radius:999px;
+    background:var(--accent-soft);
+    color:var(--accent-strong);
+    font-size:0.75rem;
+    font-weight:700;
+  }
+  .pocket-card-review{
+    margin:0;
+    font-size:0.85rem;
+    color:var(--text);
+    font-style:italic;
+  }
+  .pocket-card-visit-btn{
+    align-self:flex-start;
+    margin-top:2px;
+    padding:6px 14px;
+    border-radius:999px;
+    border:1px solid var(--accent);
+    background:var(--bg);
+    color:var(--accent-strong);
+    font-size:0.78rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .18s ease, color .18s ease, transform .18s ease;
+  }
+  .pocket-card-visit-btn:hover{
+    background:var(--accent-soft);
+    transform:translateY(-1px);
+  }
+  .pocket-card-visit-btn.is-visited{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+  .pocket-card-visit-btn.is-visited:hover{opacity:.85;}
+
+  /* ---------- 가볼곳 / 가본곳 그룹 ---------- */
+  .pocket-group{margin-bottom:40px;}
+  .pocket-group:last-child{margin-bottom:0;}
+  .pocket-group-heading{
+    margin:0 0 14px;
+    font-size:1.05rem;
+    font-weight:700;
+    letter-spacing:-0.02em;
+  }
+  .pocket-group-empty{
+    padding:22px 16px;
+    text-align:center;
+    color:var(--text-soft);
+    font-size:0.85rem;
+    border-radius:var(--radius-md);
+    border:1px dashed var(--neutral-border);
+  }
+
+  /* ---------- 내 기록 모달 ---------- */
+  .record-modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(43,43,46,0.45);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:100;
+  }
+  .record-modal-overlay.open{display:flex;}
+  .record-panel{
+    width:100%;
+    max-width:420px;
+    max-height:85vh;
+    overflow-y:auto;
+    border:1px solid var(--neutral-border);
+    border-radius:var(--radius-lg);
+    background:var(--bg-alt);
+    box-shadow:var(--shadow-card-hover);
+    padding:24px;
+  }
+  .record-panel-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:4px;
+  }
+  .record-panel-name{
+    margin:0;
+    font-size:1.05rem;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .record-panel-close{
+    flex:none;
+    width:26px;height:26px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    border:none;
+    background:var(--neutral);
+    color:var(--text-soft);
+    font-size:1rem;
+    line-height:1;
+    cursor:pointer;
+    transition:background .18s ease, color .18s ease;
+  }
+  .record-panel-close:hover{
+    background:var(--accent-soft);
+    color:var(--accent-strong);
+  }
+  .record-panel-meta{
+    margin:0 0 18px;
+    font-size:0.85rem;
+    color:var(--text-soft);
+  }
+  .record-panel-label{
+    display:block;
+    margin:0 0 8px;
+    font-size:0.8rem;
+    font-weight:700;
+    color:var(--text-soft);
+  }
+  .record-rating-group{
+    display:flex;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .record-rating-btn{
+    padding:9px 16px;
+    border-radius:999px;
+    border:1px solid var(--neutral-border);
+    background:var(--bg);
+    color:var(--text-soft);
+    font-size:0.85rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .record-rating-btn:hover{background:var(--neutral);}
+  .record-rating-btn.is-active{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#fff;
+  }
+  .record-review-input{
+    width:100%;
+    min-height:72px;
+    padding:12px 14px;
+    border-radius:var(--radius-md);
+    border:1px solid var(--neutral-border);
+    background:var(--bg);
+    color:var(--text);
+    font-family:inherit;
+    font-size:0.9rem;
+    resize:vertical;
+    margin-bottom:18px;
+  }
+  .record-review-input:focus{
+    outline:none;
+    border-color:var(--accent);
+  }
+  .record-save-btn{
+    width:100%;
+    padding:12px;
+    border-radius:999px;
+    border:none;
+    background:var(--text);
+    color:#fff;
+    font-size:0.9rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:opacity .18s ease;
+  }
+  .record-save-btn:hover{opacity:.85;}
+  .record-save-btn:disabled{opacity:.6; cursor:not-allowed;}
+  .record-save-status{
+    margin:10px 0 0;
+    font-size:0.8rem;
+    color:var(--text-soft);
+    text-align:center;
+    min-height:1em;
+  }
 
   footer.site{
     padding:24px 0 40px;
@@ -257,9 +441,43 @@
       <p>아직 담은 맛집이 없어요. 검색하러 가볼까요?</p>
       <a class="pocket-empty-btn" href="index.html#search">검색하러 가기</a>
     </div>
-    <div class="pocket-grid" id="pocketGrid"></div>
+
+    <div id="pocketLists" hidden>
+      <div class="pocket-group">
+        <h2 class="pocket-group-heading">가볼곳</h2>
+        <p class="pocket-group-empty" id="togoEmpty" hidden>담은 곳을 모두 다녀왔어요.</p>
+        <div class="pocket-grid" id="togoGrid"></div>
+      </div>
+      <div class="pocket-group">
+        <h2 class="pocket-group-heading">가본곳</h2>
+        <p class="pocket-group-empty" id="visitedEmpty" hidden>아직 다녀온 곳으로 표시한 맛집이 없어요.</p>
+        <div class="pocket-grid" id="visitedGrid"></div>
+      </div>
+    </div>
   </section>
 </main>
+
+<div class="record-modal-overlay" id="recordModalOverlay">
+  <div class="record-panel" id="recordPanel">
+    <div class="record-panel-header">
+      <h3 class="record-panel-name" id="recordName"></h3>
+      <button type="button" class="record-panel-close" id="recordCloseBtn" aria-label="내 기록 닫기">×</button>
+    </div>
+    <p class="record-panel-meta" id="recordMeta"></p>
+
+    <span class="record-panel-label">평가</span>
+    <div class="record-rating-group" id="recordRatingGroup">
+      <button type="button" class="record-rating-btn" data-rating="또올래요">또올래요</button>
+      <button type="button" class="record-rating-btn" data-rating="글쎄요">글쎄요</button>
+    </div>
+
+    <span class="record-panel-label">한줄평</span>
+    <textarea class="record-review-input" id="recordReviewInput" maxlength="200" placeholder="이곳에 대한 한줄평을 남겨보세요"></textarea>
+
+    <button type="button" class="record-save-btn" id="recordSaveBtn">저장</button>
+    <p class="record-save-status" id="recordSaveStatus"></p>
+  </div>
+</div>
 
 <footer class="site">
   <div class="wrap">I can eat — 내가 담은 맛집은 나만 볼 수 있어요.</div>
@@ -278,7 +496,11 @@
 
   var statusMsg = document.getElementById('statusMsg');
   var pocketEmpty = document.getElementById('pocketEmpty');
-  var pocketGrid = document.getElementById('pocketGrid');
+  var pocketLists = document.getElementById('pocketLists');
+  var togoGrid = document.getElementById('togoGrid');
+  var togoEmpty = document.getElementById('togoEmpty');
+  var visitedGrid = document.getElementById('visitedGrid');
+  var visitedEmpty = document.getElementById('visitedEmpty');
 
   function showStatus(text, modifier){
     statusMsg.hidden = false;
@@ -296,8 +518,21 @@
     pocketEmpty.hidden = !show;
   }
 
-  function clearGrid(){
-    pocketGrid.innerHTML = '';
+  // 두 그리드(가볼곳/가본곳)를 합쳐 전체가 비었으면 전역 빈 상태를,
+  // 아니면 각 그룹별 빈 상태 문구를 갱신한다.
+  function refreshEmptyStates(){
+    var togoCount = togoGrid.querySelectorAll('.pocket-card').length;
+    var visitedCount = visitedGrid.querySelectorAll('.pocket-card').length;
+
+    if (togoCount + visitedCount === 0) {
+      pocketLists.hidden = true;
+      showEmpty(true);
+      return;
+    }
+    showEmpty(false);
+    pocketLists.hidden = false;
+    togoEmpty.hidden = togoCount > 0;
+    visitedEmpty.hidden = visitedCount > 0;
   }
 
   function formatDate(iso){
@@ -325,7 +560,39 @@
         return;
       }
       card.remove();
-      if (!pocketGrid.querySelector('.pocket-card')) showEmpty(true);
+      refreshEmptyStates();
+    });
+  }
+
+  function setVisitBtnState(btn, visited){
+    btn.classList.toggle('is-visited', !!visited);
+    btn.textContent = visited ? '안가봤어요' : '가봤어요';
+    btn.setAttribute('aria-pressed', visited ? 'true' : 'false');
+  }
+
+  function gridFor(row){
+    return row.visited ? visitedGrid : togoGrid;
+  }
+
+  function placeCard(row, supa){
+    gridFor(row).appendChild(renderCard(row, supa));
+  }
+
+  // 가봤어요/안가봤어요 토글: DB에 visited를 반영한 뒤, 카드를 반대편 그리드로 옮긴다.
+  function toggleVisited(row, card, btn, supa){
+    btn.disabled = true;
+    var nextVisited = !row.visited;
+    supa.from('saved_restaurants').update({ visited: nextVisited }).eq('id', row.id).then(function(res){
+      btn.disabled = false;
+      if (res.error) {
+        console.error('[맛집주머니] 방문 상태 변경 실패:', res.error.message);
+        alert('처리하지 못했어요. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      row.visited = nextVisited;
+      card.remove();
+      placeCard(row, supa);
+      refreshEmptyStates();
     });
   }
 
@@ -338,7 +605,8 @@
     removeBtn.className = 'pocket-card-remove';
     removeBtn.setAttribute('aria-label', '맛집주머니에서 삭제');
     removeBtn.textContent = '×';
-    removeBtn.addEventListener('click', function(){
+    removeBtn.addEventListener('click', function(e){
+      e.stopPropagation();
       removeRow(row, card, removeBtn, supa);
     });
     card.appendChild(removeBtn);
@@ -360,10 +628,35 @@
       card.appendChild(category);
     }
 
+    var ratingBadge = document.createElement('p');
+    ratingBadge.className = 'pocket-card-rating-badge';
+    ratingBadge.hidden = !row.rating;
+    ratingBadge.textContent = row.rating || '';
+    card.appendChild(ratingBadge);
+
+    var reviewText = document.createElement('p');
+    reviewText.className = 'pocket-card-review';
+    reviewText.hidden = !row.review_text;
+    reviewText.textContent = row.review_text ? ('"' + row.review_text + '"') : '';
+    card.appendChild(reviewText);
+
+    // 리뷰 모달에서 저장한 뒤 카드 전체를 다시 그리지 않고 이 두 엘리먼트만 갱신한다.
+    card._recordEls = { rating: ratingBadge, review: reviewText };
+
     var date = document.createElement('p');
     date.className = 'pocket-card-date';
     date.textContent = formatDate(row.created_at);
     card.appendChild(date);
+
+    var visitBtn = document.createElement('button');
+    visitBtn.type = 'button';
+    visitBtn.className = 'pocket-card-visit-btn';
+    setVisitBtnState(visitBtn, row.visited);
+    visitBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      toggleVisited(row, card, visitBtn, supa);
+    });
+    card.appendChild(visitBtn);
 
     var link = document.createElement('a');
     link.className = 'pocket-card-link';
@@ -373,17 +666,27 @@
     link.textContent = '구글맵에서 보기 →';
     card.appendChild(link);
 
+    // 카드 클릭(삭제/방문토글/구글맵 링크 제외): 내 기록(평가·한줄평) 모달을 연다.
+    card.addEventListener('click', function(e){
+      if (e.target.closest('.pocket-card-remove')) return;
+      if (e.target.closest('.pocket-card-visit-btn')) return;
+      if (e.target.closest('.pocket-card-link')) return;
+      openRecordModal(row, card, supa);
+    });
+
     return card;
   }
 
   function loadPockets(){
     showStatus('불러오는 중…', 'loading');
     showEmpty(false);
-    clearGrid();
+    pocketLists.hidden = true;
+    togoGrid.innerHTML = '';
+    visitedGrid.innerHTML = '';
 
     var supa = window.icaneatAuth.getClient();
     supa.from('saved_restaurants')
-      .select('id, place_id, place_name, category_name, address, lat, lng, created_at')
+      .select('id, place_id, place_name, category_name, address, lat, lng, created_at, visited, rating, review_text')
       .order('created_at', { ascending: false })
       .then(function(res){
         if (res.error) {
@@ -393,25 +696,127 @@
         }
 
         var rows = res.data || [];
+        hideStatus();
+
         if (rows.length === 0) {
-          hideStatus();
           showEmpty(true);
           return;
         }
 
-        hideStatus();
         rows.forEach(function(row){
-          pocketGrid.appendChild(renderCard(row, supa));
+          placeCard(row, supa);
         });
+        refreshEmptyStates();
       });
   }
 
   function showLoginRequired(){
-    clearGrid();
+    togoGrid.innerHTML = '';
+    visitedGrid.innerHTML = '';
+    pocketLists.hidden = true;
     showEmpty(false);
     showStatus('로그인이 필요합니다.', 'error');
     window.icaneatAuth.requireLogin();
   }
+
+  // ---------- 내 기록(평가·한줄평) 모달 ----------
+  var recordModalOverlay = document.getElementById('recordModalOverlay');
+  var recordName = document.getElementById('recordName');
+  var recordMeta = document.getElementById('recordMeta');
+  var recordRatingGroup = document.getElementById('recordRatingGroup');
+  var recordReviewInput = document.getElementById('recordReviewInput');
+  var recordSaveBtn = document.getElementById('recordSaveBtn');
+  var recordSaveStatus = document.getElementById('recordSaveStatus');
+  var recordCloseBtn = document.getElementById('recordCloseBtn');
+
+  var activeRecordRow = null;
+  var activeRecordCard = null;
+  var activeRecordSupa = null;
+  var pendingRating = null;
+
+  function isRecordOpen(){
+    return recordModalOverlay.classList.contains('open');
+  }
+
+  function updateRatingButtons(){
+    Array.prototype.forEach.call(recordRatingGroup.querySelectorAll('.record-rating-btn'), function(btn){
+      btn.classList.toggle('is-active', btn.dataset.rating === pendingRating);
+    });
+  }
+
+  function openRecordModal(row, card, supa){
+    activeRecordRow = row;
+    activeRecordCard = card;
+    activeRecordSupa = supa;
+    pendingRating = row.rating || null;
+
+    recordName.textContent = row.place_name || '이름 없음';
+    recordMeta.textContent = [row.category_name, row.address].filter(Boolean).join(' · ');
+    recordReviewInput.value = row.review_text || '';
+    recordSaveStatus.textContent = '';
+    updateRatingButtons();
+
+    recordModalOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeRecordModal(){
+    recordModalOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+    activeRecordRow = null;
+    activeRecordCard = null;
+    activeRecordSupa = null;
+  }
+
+  recordRatingGroup.addEventListener('click', function(e){
+    var btn = e.target.closest('.record-rating-btn');
+    if (!btn) return;
+    var value = btn.dataset.rating;
+    // 이미 선택된 평가를 다시 누르면 해제.
+    pendingRating = (pendingRating === value) ? null : value;
+    updateRatingButtons();
+  });
+
+  recordCloseBtn.addEventListener('click', closeRecordModal);
+  recordModalOverlay.addEventListener('click', function(e){
+    if (e.target === recordModalOverlay) closeRecordModal();
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && isRecordOpen()) closeRecordModal();
+  });
+
+  recordSaveBtn.addEventListener('click', function(){
+    if (!activeRecordRow) return;
+    var row = activeRecordRow;
+    var card = activeRecordCard;
+    var supa = activeRecordSupa;
+    var reviewText = recordReviewInput.value.trim();
+
+    recordSaveBtn.disabled = true;
+    recordSaveStatus.textContent = '저장 중…';
+
+    supa.from('saved_restaurants')
+      .update({ rating: pendingRating, review_text: reviewText || null })
+      .eq('id', row.id)
+      .then(function(res){
+        recordSaveBtn.disabled = false;
+        if (res.error) {
+          console.error('[맛집주머니] 내 기록 저장 실패:', res.error.message);
+          recordSaveStatus.textContent = '저장하지 못했어요. 잠시 후 다시 시도해주세요.';
+          return;
+        }
+        row.rating = pendingRating;
+        row.review_text = reviewText || null;
+
+        var els = card._recordEls;
+        els.rating.hidden = !row.rating;
+        els.rating.textContent = row.rating || '';
+        els.review.hidden = !row.review_text;
+        els.review.textContent = row.review_text ? ('"' + row.review_text + '"') : '';
+
+        closeRecordModal();
+      });
+  });
 
   // 초기 렌더는 getSession()으로 직접 확정한 뒤 진행한다 — onChange는 auth.js의
   // getSession()이 비동기로 끝나기 전까지 currentUser=null로 먼저 한 번 불리므로,

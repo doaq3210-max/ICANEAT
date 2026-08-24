@@ -8,6 +8,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍚</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="auth.css">
+<link rel="stylesheet" href="restaurant-card.css">
+<script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
@@ -181,19 +183,7 @@
     grid-template-columns:1fr;
     gap:16px;
   }
-  .mini-card{
-    position:relative;
-    padding:20px;
-    border:1px solid var(--neutral-border);
-    border-radius:var(--radius-lg);
-    background:var(--bg);
-    box-shadow:var(--shadow-card);
-    transition:transform .22s ease, box-shadow .22s ease;
-  }
-  .mini-card:hover{
-    transform:translateY(-4px);
-    box-shadow:var(--shadow-card-hover);
-  }
+  /* 카드 자체(.rest-card)는 restaurant-card.css가 담당 — 여기서는 랭킹 전용 배지/카운트만. */
   .mini-card-rank{
     display:inline-flex;
     align-items:center;
@@ -206,34 +196,12 @@
     font-weight:800;
     margin-bottom:10px;
   }
-  .mini-card-name{
-    margin:0 0 4px;
-    font-size:1rem;
-    font-weight:700;
-    letter-spacing:-0.01em;
-  }
-  .mini-card-meta{
-    margin:0;
-    font-size:0.82rem;
-    color:var(--text-soft);
-  }
   .mini-card-count{
     margin:8px 0 0;
     font-size:0.78rem;
     font-weight:600;
     color:var(--accent-strong);
   }
-  .mini-card-link{
-    display:inline-block;
-    margin-top:10px;
-    font-size:0.8rem;
-    font-weight:600;
-    color:var(--accent-strong);
-    text-decoration:none;
-    border-bottom:1px solid var(--accent);
-    padding-bottom:1px;
-  }
-  .mini-card-link:hover{opacity:.75;}
 
   /* ---------- Reveal animation ---------- */
   .reveal{
@@ -424,6 +392,7 @@
 </footer>
 
 <script src="auth.js"></script>
+<script src="restaurant-card.js"></script>
 <script>
   (function(){
     var hour = new Date().getHours();
@@ -434,16 +403,6 @@
   (function(){
     'use strict';
 
-    function buildKakaoPlaceUrl(placeId){
-      return 'https://place.map.kakao.com/' + encodeURIComponent(placeId);
-    }
-
-    function miniCardShell(){
-      var card = document.createElement('article');
-      card.className = 'mini-card';
-      return card;
-    }
-
     function appendText(parent, tag, className, text){
       var el = document.createElement(tag);
       if (className) el.className = className;
@@ -452,9 +411,27 @@
       return el;
     }
 
+    // get_popular_restaurants RPC row(place_id, place_name, category_name, address, lat, lng, save_count)를
+    // restaurant-card.js의 renderCard()가 기대하는 카카오 doc 형태로 맞춰준다.
+    function rankingRowToDoc(row){
+      return {
+        id: row.place_id,
+        place_name: row.place_name,
+        category_name: row.category_name,
+        road_address_name: row.address,
+        address_name: row.address,
+        x: row.lng,
+        y: row.lat,
+        phone: null,
+        place_url: null,
+        distance: null,
+      };
+    }
+
     // ---------- 인기 랭킹 (로그인 여부와 무관하게 노출) ----------
     var rankingStatus = document.getElementById('rankingStatus');
     var rankingGrid = document.getElementById('rankingGrid');
+    window.icaneatCard.mount(rankingGrid);
 
     function showRankingStatus(text){
       rankingStatus.hidden = false;
@@ -469,16 +446,15 @@
       }
       rankingStatus.hidden = true;
       rows.forEach(function(row, i){
-        var card = miniCardShell();
-        appendText(card, 'span', 'mini-card-rank', String(i + 1));
-        appendText(card, 'h3', 'mini-card-name', row.place_name || '이름 없음');
-        if (row.category_name) appendText(card, 'p', 'mini-card-meta', row.category_name);
-        if (row.address) appendText(card, 'p', 'mini-card-meta', row.address);
+        var card = window.icaneatCard.renderCard(rankingRowToDoc(row));
+
+        var rankBadge = document.createElement('span');
+        rankBadge.className = 'mini-card-rank';
+        rankBadge.textContent = String(i + 1);
+        card.insertBefore(rankBadge, card.firstChild);
+
         appendText(card, 'p', 'mini-card-count', (row.save_count || 0) + '명이 담았어요');
-        var link = appendText(card, 'a', 'mini-card-link', '카카오맵에서 보기 →');
-        link.href = buildKakaoPlaceUrl(row.place_id);
-        link.target = '_blank';
-        link.rel = 'noopener';
+
         rankingGrid.appendChild(card);
       });
     }
@@ -501,6 +477,7 @@
     var recoSub = document.getElementById('recoSub');
     var recoStatus = document.getElementById('recoStatus');
     var recoGrid = document.getElementById('recoGrid');
+    window.icaneatCard.mount(recoGrid);
 
     function hideReco(){
       recoSection.hidden = true;
@@ -523,17 +500,7 @@
       recoGrid.innerHTML = '';
       recoStatus.hidden = true;
       docs.forEach(function(doc){
-        var card = miniCardShell();
-        appendText(card, 'h3', 'mini-card-name', doc.place_name || '이름 없음');
-        if (doc.category_name) appendText(card, 'p', 'mini-card-meta', doc.category_name);
-        appendText(card, 'p', 'mini-card-meta', doc.road_address_name || doc.address_name || '주소 정보 없음');
-        if (doc.place_url) {
-          var link = appendText(card, 'a', 'mini-card-link', '카카오맵에서 보기 →');
-          link.href = doc.place_url;
-          link.target = '_blank';
-          link.rel = 'noopener';
-        }
-        recoGrid.appendChild(card);
+        recoGrid.appendChild(window.icaneatCard.renderCard(doc));
       });
     }
 
