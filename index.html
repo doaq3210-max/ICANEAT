@@ -246,62 +246,54 @@
     transform:translateY(0);
   }
 
-  /* ---------- CTA ---------- */
-  .cta-box{
-    background:var(--text);
-    color:#fff;
-    border-radius:24px;
-    padding:40px 22px;
-    text-align:center;
+  /* ---------- 검색 툴바 ---------- */
+  .search-toolbar-section{
+    padding:8px 0 40px;
+  }
+  .search-toolbar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    max-width:640px;
+    margin:0 auto;
+    background:var(--bg);
+    border:1px solid var(--neutral-border);
+    border-radius:999px;
+    box-shadow:var(--shadow-card);
+    padding:6px 6px 6px 22px;
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .search-toolbar:focus-within{
+    border-color:var(--accent);
     box-shadow:var(--shadow-card-hover);
   }
-  .cta-box h2{
-    font-size:clamp(1.4rem,3vw,1.9rem);
-    font-weight:700;
-    margin:0 0 10px;
-    letter-spacing:-0.02em;
-  }
-  .cta-box p{
-    color:rgba(255,255,255,0.68);
-    margin:0 0 30px;
-    font-size:0.95rem;
-  }
-  form.signup{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    max-width:420px;
-    margin:0 auto;
-  }
-  form.signup input[type="text"]{
+  .search-toolbar-input{
     flex:1;
-    padding:13px 18px;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,0.18);
-    background:rgba(255,255,255,0.08);
-    color:#fff;
-    font-size:0.92rem;
-    outline:none;
-    transition:border-color .2s ease, background .2s ease;
-  }
-  form.signup input[type="text"]::placeholder{color:rgba(255,255,255,0.45);}
-  form.signup input[type="text"]:focus{
-    border-color:var(--accent);
-    background:rgba(255,255,255,0.12);
-  }
-  form.signup button{
-    padding:13px 22px;
-    border-radius:999px;
+    min-width:0;
     border:none;
-    background:var(--accent-strong);
+    outline:none;
+    background:transparent;
+    padding:12px 0;
+    font-size:0.95rem;
+    color:var(--text);
+  }
+  .search-toolbar-input::placeholder{color:var(--text-soft);}
+  .search-toolbar-btn{
+    flex-shrink:0;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    border:none;
+    background:var(--accent);
     color:#fff;
-    font-weight:700;
-    font-size:0.9rem;
+    font-size:1.05rem;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     cursor:pointer;
-    white-space:nowrap;
     transition:opacity .18s ease, transform .18s ease;
   }
-  form.signup button:hover{opacity:.9; transform:translateY(-1px);}
+  .search-toolbar-btn:hover{opacity:.85; transform:translateY(-1px);}
 
   /* ---------- Footer ---------- */
   footer.site{
@@ -350,8 +342,6 @@
     .hero .wrap{grid-template-columns:1.1fr 0.9fr; gap:48px;}
     .hero-visual{order:0; max-width:320px;}
     section{padding:80px 0;}
-    .cta-box{padding:56px 40px; border-radius:28px;}
-    form.signup{flex-direction:row;}
     footer.site .wrap{flex-direction:row; align-items:center; justify-content:space-between;}
     .mini-grid{grid-template-columns:repeat(3, 1fr); gap:18px;}
   }
@@ -390,6 +380,15 @@
   </div>
 </section>
 
+<section class="search-toolbar-section" id="search">
+  <div class="wrap">
+    <form class="search-toolbar" id="searchForm" novalidate>
+      <input type="text" id="searchInput" class="search-toolbar-input" placeholder="먹고 싶은 메뉴나 지역을 입력해보세요" autocomplete="off">
+      <button type="submit" class="search-toolbar-btn" aria-label="검색">🔍</button>
+    </form>
+  </div>
+</section>
+
 <section class="section-alt" id="ranking">
   <div class="wrap">
     <h2 class="section-heading">지금 인기 맛집 TOP 5</h2>
@@ -405,19 +404,6 @@
     <p class="section-sub" id="recoSub"></p>
     <p class="mini-status" id="recoStatus" hidden></p>
     <div class="mini-grid" id="recoGrid"></div>
-  </div>
-</section>
-
-<section class="section-alt" id="search">
-  <div class="wrap">
-    <div class="cta-box reveal">
-      <h2>지금 맛집을 검색해보세요</h2>
-      <p>먹고 싶은 메뉴나 지역을 입력하면 바로 찾아드릴게요.</p>
-      <form class="signup" id="searchForm" novalidate>
-        <input type="text" id="searchInput" placeholder="먹고 싶은 메뉴나 지역을 입력해보세요" autocomplete="off">
-        <button type="submit">검색하러 가기</button>
-      </form>
-    </div>
   </div>
 </section>
 
