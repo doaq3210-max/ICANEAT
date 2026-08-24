@@ -1,6 +1,8 @@
 -- "인기 랭킹" 기능: saved_restaurants는 RLS로 본인 것만 조회 가능하므로,
 -- 누가 담았는지는 절대 노출하지 않고 가게별 담긴 횟수만 집계해 돌려주는
 -- 전용 SECURITY DEFINER 함수. saved_restaurants의 RLS 정책은 그대로 둔다.
+-- 개발/데모용 더미 데이터(place_id like 'dummy-%')는 실제 존재하지 않는 가짜 가게라
+-- 구글 리뷰가 절대 나오지 않으므로 집계에서 제외한다(행 자체는 지우지 않음).
 -- Supabase 대시보드 SQL Editor에서 실행하세요.
 
 create or replace function public.get_popular_restaurants(limit_count int default 5)
@@ -21,6 +23,7 @@ as $$
   with counts as (
     select place_id, count(*) as save_count
     from public.saved_restaurants
+    where place_id not like 'dummy-%'
     group by place_id
     order by save_count desc, place_id
     limit limit_count
@@ -29,6 +32,7 @@ as $$
     select distinct on (place_id)
       place_id, place_name, category_name, address, lat, lng
     from public.saved_restaurants
+    where place_id not like 'dummy-%'
     order by place_id, created_at desc
   )
   select c.place_id, l.place_name, l.category_name, l.address, l.lat, l.lng, c.save_count
