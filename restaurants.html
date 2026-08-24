@@ -87,6 +87,17 @@
     align-items:center;
     gap:10px;
   }
+  .nav-cta{
+    font-size:0.85rem;
+    font-weight:600;
+    padding:9px 18px;
+    border-radius:999px;
+    background:var(--text);
+    color:#fff;
+    text-decoration:none;
+    transition:opacity .2s ease;
+  }
+  .nav-cta:hover{opacity:.82;}
 
   /* ---------- Search section ---------- */
   .search-section{
@@ -553,6 +564,7 @@
     <a class="logo" href="index.html">I can <span>eat</span></a>
     <div class="header-actions">
       <span class="page-title">맛집 검색 (베타)</span>
+      <a class="nav-cta" href="mypage.html" id="pocketNavLink">맛집주머니</a>
       <div id="authSlot"></div>
     </div>
   </div>
@@ -630,6 +642,14 @@
   var statusMsg = document.getElementById('statusMsg');
   var restGrid = document.getElementById('restGrid');
   var loadMoreBtn = document.getElementById('loadMoreBtn');
+  var pocketNavLink = document.getElementById('pocketNavLink');
+
+  pocketNavLink.addEventListener('click', function (e) {
+    if (!window.icaneatAuth.getUser()) {
+      e.preventDefault();
+      window.icaneatAuth.requireLogin();
+    }
+  });
 
   var state = {
     category: '',      // '', 'FD6', 'CE7'
