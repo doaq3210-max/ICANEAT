@@ -167,6 +167,86 @@
   section{padding:56px 0;}
   .section-alt{background:var(--bg-alt);}
 
+  /* ---------- 인기 랭킹 / 맞춤 추천 ---------- */
+  .section-heading{
+    margin:0 0 6px;
+    font-size:1.3rem;
+    font-weight:800;
+    letter-spacing:-0.02em;
+  }
+  .section-sub{
+    margin:0 0 24px;
+    font-size:0.9rem;
+    color:var(--text-soft);
+  }
+  .mini-status{
+    text-align:center;
+    padding:32px 16px;
+    color:var(--text-soft);
+    font-size:0.9rem;
+    border-radius:var(--radius-lg);
+    border:1px solid var(--neutral-border);
+    background:var(--bg);
+  }
+  .mini-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:16px;
+  }
+  .mini-card{
+    position:relative;
+    padding:20px;
+    border:1px solid var(--neutral-border);
+    border-radius:var(--radius-lg);
+    background:var(--bg);
+    box-shadow:var(--shadow-card);
+    transition:transform .22s ease, box-shadow .22s ease;
+  }
+  .mini-card:hover{
+    transform:translateY(-4px);
+    box-shadow:var(--shadow-card-hover);
+  }
+  .mini-card-rank{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:26px;height:26px;
+    border-radius:50%;
+    background:var(--accent-soft);
+    color:var(--accent-strong);
+    font-size:0.8rem;
+    font-weight:800;
+    margin-bottom:10px;
+  }
+  .mini-card-name{
+    margin:0 0 4px;
+    font-size:1rem;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .mini-card-meta{
+    margin:0;
+    font-size:0.82rem;
+    color:var(--text-soft);
+  }
+  .mini-card-count{
+    margin:8px 0 0;
+    font-size:0.78rem;
+    font-weight:600;
+    color:var(--accent-strong);
+  }
+  .mini-card-link{
+    display:inline-block;
+    margin-top:10px;
+    font-size:0.8rem;
+    font-weight:600;
+    color:var(--accent-strong);
+    text-decoration:none;
+    border-bottom:1px solid var(--accent);
+    padding-bottom:1px;
+  }
+  .mini-card-link:hover{opacity:.75;}
+
   /* ---------- Reveal animation ---------- */
   .reveal{
     opacity:0;
@@ -285,11 +365,13 @@
     .cta-box{padding:56px 40px; border-radius:28px;}
     form.signup{flex-direction:row;}
     footer.site .wrap{flex-direction:row; align-items:center; justify-content:space-between;}
+    .mini-grid{grid-template-columns:repeat(3, 1fr); gap:18px;}
   }
 
   /* 데스크탑 (1440px~) */
   @media (min-width:1440px){
     .hero-visual{max-width:380px;}
+    .mini-grid{grid-template-columns:repeat(5, 1fr); gap:20px;}
   }
 </style>
 </head>
@@ -320,6 +402,24 @@
       <div class="blob"></div>
       <div class="emoji">🍽️</div>
     </div>
+  </div>
+</section>
+
+<section class="section-alt" id="ranking">
+  <div class="wrap">
+    <h2 class="section-heading">지금 인기 맛집 TOP 5</h2>
+    <p class="section-sub">사람들이 가장 많이 담은 맛집이에요.</p>
+    <p class="mini-status" id="rankingStatus" hidden></p>
+    <div class="mini-grid" id="rankingGrid"></div>
+  </div>
+</section>
+
+<section id="recoSection" hidden>
+  <div class="wrap">
+    <h2 class="section-heading" id="recoHeading">맞춤 추천</h2>
+    <p class="section-sub" id="recoSub"></p>
+    <p class="mini-status" id="recoStatus" hidden></p>
+    <div class="mini-grid" id="recoGrid"></div>
   </div>
 </section>
 
@@ -360,9 +460,186 @@
     document.documentElement.setAttribute('data-daypart', isLunch ? 'lunch' : 'dinner');
   })();
 
-  window.icaneatAuth.onChange(function(user){
-    document.getElementById('pocketNavLink').hidden = !user;
-  });
+  (function(){
+    'use strict';
+
+    function buildKakaoPlaceUrl(placeId){
+      return 'https://place.map.kakao.com/' + encodeURIComponent(placeId);
+    }
+
+    function miniCardShell(){
+      var card = document.createElement('article');
+      card.className = 'mini-card';
+      return card;
+    }
+
+    function appendText(parent, tag, className, text){
+      var el = document.createElement(tag);
+      if (className) el.className = className;
+      el.textContent = text;
+      parent.appendChild(el);
+      return el;
+    }
+
+    // ---------- 인기 랭킹 (로그인 여부와 무관하게 노출) ----------
+    var rankingStatus = document.getElementById('rankingStatus');
+    var rankingGrid = document.getElementById('rankingGrid');
+
+    function showRankingStatus(text){
+      rankingStatus.hidden = false;
+      rankingStatus.textContent = text;
+    }
+
+    function renderRanking(rows){
+      rankingGrid.innerHTML = '';
+      if (rows.length === 0) {
+        showRankingStatus('아직 담긴 맛집이 없어요.');
+        return;
+      }
+      rankingStatus.hidden = true;
+      rows.forEach(function(row, i){
+        var card = miniCardShell();
+        appendText(card, 'span', 'mini-card-rank', String(i + 1));
+        appendText(card, 'h3', 'mini-card-name', row.place_name || '이름 없음');
+        if (row.category_name) appendText(card, 'p', 'mini-card-meta', row.category_name);
+        if (row.address) appendText(card, 'p', 'mini-card-meta', row.address);
+        appendText(card, 'p', 'mini-card-count', (row.save_count || 0) + '명이 담았어요');
+        var link = appendText(card, 'a', 'mini-card-link', '카카오맵에서 보기 →');
+        link.href = buildKakaoPlaceUrl(row.place_id);
+        link.target = '_blank';
+        link.rel = 'noopener';
+        rankingGrid.appendChild(card);
+      });
+    }
+
+    showRankingStatus('불러오는 중…');
+    window.icaneatAuth.getClient()
+      .rpc('get_popular_restaurants', { limit_count: 5 })
+      .then(function(res){
+        if (res.error) {
+          console.error('[인기 랭킹] 조회 실패:', res.error.message);
+          showRankingStatus('인기 맛집을 불러오지 못했어요.');
+          return;
+        }
+        renderRanking(res.data || []);
+      });
+
+    // ---------- 맞춤 추천 (로그인 시에만 노출) ----------
+    var recoSection = document.getElementById('recoSection');
+    var recoHeading = document.getElementById('recoHeading');
+    var recoSub = document.getElementById('recoSub');
+    var recoStatus = document.getElementById('recoStatus');
+    var recoGrid = document.getElementById('recoGrid');
+
+    function hideReco(){
+      recoSection.hidden = true;
+      recoGrid.innerHTML = '';
+    }
+
+    function showRecoStatus(text){
+      recoStatus.hidden = false;
+      recoStatus.textContent = text;
+    }
+
+    // "음식점 > 한식 > 육류,고기" 형태에서 대분류(예: 한식)만 추천 키워드로 사용.
+    function extractTopCategory(categoryName){
+      if (!categoryName) return null;
+      var parts = categoryName.split('>').map(function(s){ return s.trim(); }).filter(Boolean);
+      return parts.length > 1 ? parts[1] : parts[0];
+    }
+
+    function renderReco(docs){
+      recoGrid.innerHTML = '';
+      recoStatus.hidden = true;
+      docs.forEach(function(doc){
+        var card = miniCardShell();
+        appendText(card, 'h3', 'mini-card-name', doc.place_name || '이름 없음');
+        if (doc.category_name) appendText(card, 'p', 'mini-card-meta', doc.category_name);
+        appendText(card, 'p', 'mini-card-meta', doc.road_address_name || doc.address_name || '주소 정보 없음');
+        if (doc.place_url) {
+          var link = appendText(card, 'a', 'mini-card-link', '카카오맵에서 보기 →');
+          link.href = doc.place_url;
+          link.target = '_blank';
+          link.rel = 'noopener';
+        }
+        recoGrid.appendChild(card);
+      });
+    }
+
+    function fetchRecommendations(keyword, savedIds){
+      recoSection.hidden = false;
+      recoHeading.textContent = keyword + ' 맛집 추천';
+      recoSub.textContent = '자주 담은 "' + keyword + '" 카테고리에서 아직 안 담아본 곳이에요.';
+      recoGrid.innerHTML = '';
+      showRecoStatus('추천을 불러오는 중…');
+
+      var params = new URLSearchParams();
+      params.set('query', keyword);
+
+      fetch('/api/kakao-search?' + params.toString())
+        .then(function(res){ return res.json(); })
+        .then(function(data){
+          if (data.error) throw new Error(data.error);
+          var docs = (data.documents || []).filter(function(doc){
+            return doc.id && !savedIds.has(doc.id);
+          }).slice(0, 5);
+
+          if (docs.length === 0) {
+            hideReco();
+            return;
+          }
+          renderReco(docs);
+        })
+        .catch(function(err){
+          console.error('[맞춤 추천] 조회 실패:', err.message);
+          hideReco();
+        });
+    }
+
+    function loadPersonalRecommendation(){
+      window.icaneatAuth.getClient()
+        .from('saved_restaurants')
+        .select('place_id, category_name')
+        .then(function(res){
+          if (res.error || !res.data || res.data.length === 0) {
+            hideReco();
+            return;
+          }
+
+          var savedIds = new Set(res.data.map(function(r){ return r.place_id; }));
+          var freq = {};
+          res.data.forEach(function(r){
+            var top = extractTopCategory(r.category_name);
+            if (!top) return;
+            freq[top] = (freq[top] || 0) + 1;
+          });
+
+          var topCategory = null;
+          var topCount = 0;
+          Object.keys(freq).forEach(function(k){
+            if (freq[k] > topCount) {
+              topCategory = k;
+              topCount = freq[k];
+            }
+          });
+
+          if (!topCategory) {
+            hideReco();
+            return;
+          }
+          fetchRecommendations(topCategory, savedIds);
+        });
+    }
+
+    window.icaneatAuth.onChange(function(user){
+      document.getElementById('pocketNavLink').hidden = !user;
+      if (user) {
+        loadPersonalRecommendation();
+      } else {
+        hideReco();
+      }
+    });
+  })();
 
   var searchForm = document.getElementById('searchForm');
   var searchInput = document.getElementById('searchInput');

@@ -7,9 +7,10 @@
 **I can eat (icaneat)** — 맛집 검색/리뷰 서비스. `icaneat_PRD.md`/`icaneat_design.md`는 v0.1(정식 출시 전 이메일 사전 신청 랜딩페이지) 시점 기획 문서지만, 그 이후 카카오 검색·구글 리뷰·Gemini AI 분석이 실제로 구현되어 "사전 신청" 전제는 더 이상 유효하지 않습니다. 디자인 톤·컬러 2톤 원칙·섹션 내 카드형 레이아웃 등 **비주얼 디자인 결정**은 여전히 두 문서를 소스 오브 트루스로 취급하되, 카피/섹션 구성은 실제 구현 상태를 우선한다.
 
 - `icaneat_PRD.md` / `icaneat_design.md` — 기획 배경, 디자인 무드·컬러·타이포그래피 원칙(톤은 셋로그, 카드 그리드는 Airbnb 참고). 새 비주얼 작업 시 참고.
-- `index.html` — 홈. 히어로 + 맛집 검색창만 남은 작은 진입 페이지.
+- `index.html` — 홈. 히어로 + 인기 랭킹 + 맞춤 추천 + 맛집 검색창.
 - `about.html` — 서비스 소개(핵심 가치, 기능 미리보기 — 이용 가능/준비 중 구분, FAQ).
-- `restaurants.html` — 카카오 검색 결과 + 클릭 시 구글 리뷰/AI 분석 팝업.
+- `restaurants.html` — 카카오 검색 결과 + 클릭 시 구글 리뷰/AI 분석 팝업 + 담기 버튼.
+- `mypage.html` — 맛집주머니(내가 담은 가게 목록, 삭제 가능).
 - `api/` — `restaurants.html`이 쓰는 Vercel 서버리스 함수(카카오/구글/제미나이 프록시). 자세한 내용은 아래 "맛집 검색 + 구글 리뷰" 섹션 참고.
 - `auth.js` / `auth.css` — 세 페이지가 공유하는 Supabase 로그인 모듈. 자세한 내용은 아래 "로그인 (Supabase Auth)" 섹션 참고.
 
@@ -27,7 +28,7 @@
 
 각각 단일 자립형 파일(인라인 CSS+JS, `:root` 디자인 토큰 재선언, Pretendard 폰트는 CDN `<link>`로 로드)입니다. 두 파일 모두 파일 하단 인라인 `<script>`에서 `new Date().getHours()`로 `<html data-daypart="lunch|dinner">`를 설정하고, 모든 `--accent*` 토큰이 이 속성 하나로부터 파생됩니다 — 다른 곳에 오렌지/하늘색을 하드코딩하지 말 것.
 
-- **`index.html`**: 헤더(로고 + `about.html`로 가는 `about` 버튼) → 히어로(서비스 한 줄 소개 + 비주얼) → 검색 CTA(`id="search"`, `지금 맛집을 검색해보세요` 박스 — 입력 후 제출하면 `restaurants.html?q=<검색어>`로 이동) → 푸터. 의도적으로 이 4개만 남긴 작은 진입 페이지이며, 다른 섹션을 다시 추가하지 말 것(필요하면 `about.html`에 추가).
+- **`index.html`**: 헤더(로고 + 로그인 시에만 보이는 `맛집주머니` 버튼 + `about.html`로 가는 `about` 버튼) → 히어로(서비스 한 줄 소개 + 비주얼) → **인기 랭킹**(`id="ranking"`, 로그인 여부와 무관하게 노출 — 아래 "인기 랭킹 / 맞춤 추천" 섹션 참고) → **맞춤 추천**(`id="recoSection"`, 로그인 후 추천 결과가 있을 때만 노출) → 검색 CTA(`id="search"`, `지금 맛집을 검색해보세요` 박스 — 입력 후 제출하면 `restaurants.html?q=<검색어>`로 이동) → 푸터. 예전에는 헤더+히어로+검색 CTA+푸터 4개만 두고 다른 섹션 추가를 금지했었지만, 인기 랭킹/맞춤 추천을 메인 화면에 노출해달라는 요청에 따라 그 규칙은 폐기되었다 — 이제 메인 화면에 새 섹션을 추가하는 것 자체는 막혀있지 않다(다만 무분별하게 늘리지 말고 필요성을 먼저 판단할 것).
 - **`about.html`**: 헤더(로고는 `index.html`로, 우측 버튼은 `index.html#search`로) → 핵심 가치 3카드 → 기능 미리보기 6카드(각 카드에 `이용 가능`/`준비 중` 배지 — 실제 구현 상태와 배지가 어긋나지 않도록 기능을 새로 구현/제거할 때 함께 갱신할 것, 스크린샷 대신 아이콘+텍스트 유지) → FAQ(아코디언) → 푸터.
 - **인터랙션**: `about.html`에 FAQ 아코디언 토글 로직이 있음(`index.html`에는 FAQ가 없으므로 해당 로직 없음). 두 파일 모두 섹션 진입 시 `IntersectionObserver` 기반 `.reveal` 페이드인(미지원 시 즉시 보이도록 폴백).
 
@@ -65,9 +66,18 @@
 
 ## 로그인 (Supabase Auth)
 
-`auth.js`/`auth.css`는 `index.html`/`about.html`/`restaurants.html` 세 페이지가 동일하게 `<link>`/`<script>`로 불러와 쓰는 유일한 공용 파일이다(그 외에는 각 페이지가 자립형 — 위 원칙 참고). Supabase 이메일/비밀번호 로그인을 `@supabase/supabase-js` CDN(`https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2`)으로 붙였고, 비밀번호 해싱·세션 저장 등 보안 관련 로직은 전혀 직접 구현하지 않고 전부 Supabase에 맡긴다.
+`auth.js`/`auth.css`는 `index.html`/`about.html`/`restaurants.html`/`mypage.html` 네 페이지가 동일하게 `<link>`/`<script>`로 불러와 쓰는 유일한 공용 파일이다(그 외에는 각 페이지가 자립형 — 위 원칙 참고). Supabase 이메일/비밀번호 로그인을 `@supabase/supabase-js` CDN(`https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2`)으로 붙였고, 비밀번호 해싱·세션 저장 등 보안 관련 로직은 전혀 직접 구현하지 않고 전부 Supabase에 맡긴다.
 
 - `auth.js`는 각 페이지의 `<div id="authSlot"></div>`(헤더의 `.header-actions` 안, 기존 nav 버튼 오른쪽)에 로그인 버튼 또는 `{이메일 앞부분}님 로그아웃`을 주입하고, 로그인/회원가입 모달(이메일+비밀번호, 에러는 한국어로 매핑)을 관리한다. Supabase Project URL과 Publishable key(`sb_publishable_...`)는 브라우저 노출이 전제된 공개 키라 `auth.js`에 직접 하드코딩되어 있다 — 카카오/구글/제미나이 REST 키처럼 서버 프록시가 필요 없다.
-- 다른 기능이 로그인 여부를 확인/요구할 때 쓰는 공개 인터페이스: `window.icaneatAuth.getUser()`(현재 유저 또는 `null`), `.onChange(cb)`(상태 변화 구독), `.requireLogin()`(비로그인 시 모달만 열고 `false` 반환, 로그인 상태면 `true`), `.signOut()`. `restaurants.html`의 "담기" 버튼이 `requireLogin()`으로 게이팅되어 있는 게 현재 유일한 사용처 — 이후 "맛집 저장" 기능도 이 인터페이스를 재사용할 것.
+- 다른 기능이 로그인 여부를 확인/요구할 때 쓰는 공개 인터페이스: `window.icaneatAuth.getUser()`(현재 유저 또는 `null`), `.onChange(cb)`(상태 변화 구독), `.requireLogin()`(비로그인 시 모달만 열고 `false` 반환, 로그인 상태면 `true`), `.signOut()`. `restaurants.html`의 "담기" 버튼, `index.html`/`restaurants.html`의 "맛집주머니" 네비 버튼, `mypage.html` 페이지 전체가 이 인터페이스로 로그인을 게이팅한다.
 - **Supabase 프로젝트 대시보드에서 "Confirm email"을 꺼둬야** 회원가입 시 이메일 인증 대기 없이 바로 로그인된다(Authentication → Sign In / Providers → Email). 이 설정은 MCP로 제공되는 Supabase 도구 목록에 없어 대시보드에서 직접 켜고 꺼야 한다.
-- Supabase MCP 서버(`claude mcp add --transport http supabase https://mcp.supabase.com/mcp`)가 연결되어 있으면 `list_tables`/`get_advisors`/`execute_sql` 등으로 프로젝트를 직접 조회·조작할 수 있다 — 이후 "맛집 저장" 기능에서 테이블을 만들 때 활용할 것.
+- Supabase MCP 서버(`claude mcp add --transport http supabase https://mcp.supabase.com/mcp`)가 연결되어 있으면 `list_tables`/`get_advisors`/`execute_sql` 등으로 프로젝트를 직접 조회·조작할 수 있다.
+
+## 맛집 담기 / 맛집주머니 / 인기 랭킹 / 맞춤 추천 (Supabase `saved_restaurants`)
+
+- **테이블**: `public.saved_restaurants` (`supabase/sql/create_saved_restaurants.sql`). 컬럼은 `user_id`(`auth.uid()` 기본값) + 담을 당시 스냅샷(`place_id`, `place_name`, `category_name`, `address`, `lat`, `lng`) + `created_at`. `unique (user_id, place_id)`로 같은 유저가 같은 가게를 두 번 담는 것을 DB 레벨에서 막고, RLS로 본인 행만 select/insert/delete 가능 — **이 RLS는 어떤 기능을 추가하든 끄지 말 것**.
+- **담기 버튼** (`restaurants.html`): `window.icaneatAuth.getClient()`로 기존 Supabase 클라이언트를 재사용해 insert/delete 토글. 비로그인 시 `requireLogin()`으로 로그인 모달만 열고 실제 담기는 막는다.
+- **맛집주머니** (`mypage.html`): 로그인한 유저의 `saved_restaurants`를 `created_at desc`로 조회해 카드로 나열, 카드별 삭제(X) 가능. `index.html`/`restaurants.html` 헤더의 "맛집주머니" 버튼(로그인 안 된 상태로 클릭하면 이동 대신 로그인 모달 오픈)에서 진입.
+- **인기 랭킹** (`index.html` `#ranking`, 로그인 여부 무관 노출): `saved_restaurants`는 RLS 때문에 다른 유저 행을 직접 집계할 수 없으므로, `public.get_popular_restaurants(limit_count int)`라는 `SECURITY DEFINER` Postgres 함수(`supabase/sql/create_popular_restaurants_function.sql`)를 통해서만 top N을 가져온다. 이 함수는 `place_id`별 개수와 가장 최근 스냅샷(이름/카테고리/주소/좌표)만 반환하고 **누가 담았는지는 절대 반환하지 않는다** — RLS를 끄는 대신 이 "전용 창구" 함수로 우회하는 패턴이므로, 다른 집계 기능이 필요해도 이 방식(별도 `SECURITY DEFINER` 함수 + 최소 컬럼만 반환)을 따를 것. 프론트에서는 `getClient().rpc('get_popular_restaurants', { limit_count: 5 })`로 호출한다.
+- **맞춤 추천** (`index.html` `#recoSection`, 로그인 시에만 노출): 본인 `saved_restaurants`는 RLS로 이미 조회 가능하므로 별도 함수 없이 직접 select. `category_name`(카카오 형식 `"음식점 > 한식 > 육류,고기"`)에서 두 번째 세그먼트(대분류, 예 `한식`)를 뽑아 가장 자주 담은 카테고리를 구하고, 그 키워드로 `/api/kakao-search`를 실시간 검색해서 이미 담은 `place_id`를 제외한 결과를 보여준다 — 추천 목록은 저장된 테이블이 아니라 매번 라이브 카카오 검색 결과다.
+- 개발/데모용 더미 데이터(`dummy-001`~`dummy-065` place_id, 100행)가 실제 가입 유저 3명에게 분산 삽입되어 있다 — 실제 서비스 데이터가 아니므로 정리가 필요하면 `place_id like 'dummy-%'` 조건으로 걸러서 지울 것.
