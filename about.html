@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>I can eat — 서비스 소개</title>
 <meta name="description" content="I can eat이 어떤 서비스인지, 지금 무엇을 쓸 수 있고 무엇을 준비 중인지 소개합니다.">
+<meta name="theme-color" id="themeColorMeta" content="#E3A874">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://msmwnaksuegjgeutepcc.supabase.co">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍚</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="auth.css">
@@ -87,6 +90,32 @@
     gap:10px;
   }
 
+  .sr-only{
+    position:absolute;
+    width:1px;height:1px;
+    padding:0;margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
+  .skip-link{
+    position:absolute;
+    top:-100px;
+    left:12px;
+    z-index:200;
+    padding:10px 16px;
+    border-radius:var(--radius-md);
+    background:var(--accent);
+    color:#fff;
+    font-weight:700;
+    text-decoration:none;
+    transition:top .18s ease;
+  }
+  .skip-link:focus{
+    top:12px;
+  }
+
   /* ---------- 주요 기능 바로가기 (퀵링크 칩) ---------- */
   .quick-nav-wrap{
     border-bottom:1px solid var(--neutral-border);
@@ -149,6 +178,7 @@
     font-weight:700;
     letter-spacing:-0.02em;
     margin:0 0 12px;
+    text-wrap:balance;
   }
   .section-head p{
     color:var(--text-soft);
@@ -179,7 +209,7 @@
     overflow:hidden;
     text-align:left;
     box-shadow:var(--shadow-card);
-    transition:transform .22s ease, box-shadow .22s ease;
+    transition:transform .22s ease;
   }
   .value-card:hover{
     transform:translateY(-4px);
@@ -202,6 +232,7 @@
     font-weight:700;
     margin:0 0 8px;
     letter-spacing:-0.01em;
+    text-wrap:balance;
   }
   .value-card p{
     margin:0;
@@ -222,7 +253,7 @@
     border-radius:var(--radius-md);
     overflow:hidden;
     box-shadow:var(--shadow-card);
-    transition:transform .22s ease, box-shadow .22s ease;
+    transition:transform .22s ease;
   }
   .feature-card:hover{
     transform:translateY(-3px);
@@ -260,6 +291,7 @@
     font-size:0.98rem;
     font-weight:700;
     margin:0 0 6px;
+    text-wrap:balance;
   }
   .feature-card p{
     margin:0;
@@ -376,6 +408,8 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main-content">본문으로 바로가기</a>
+
 <header class="site">
   <div class="wrap">
     <a class="logo" href="index.html">I can <span>eat</span></a>
@@ -388,21 +422,21 @@
 <nav class="quick-nav-wrap" aria-label="주요 기능 바로가기">
   <div class="quick-nav">
     <a class="quick-nav-item" href="index.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg>
       홈
     </a>
     <a class="quick-nav-item" href="restaurants.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       검색
     </a>
     <a class="quick-nav-item" href="mypage.html" id="navPocket">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l1 12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l1 12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
       맛집주머니
     </a>
   </div>
 </nav>
 
-<section class="section-alt">
+<section class="section-alt" id="main-content">
   <div class="wrap">
     <div class="section-head reveal">
       <span class="tag">Why I can eat</span>
@@ -411,21 +445,21 @@
     </div>
     <div class="value-grid">
       <div class="value-card reveal">
-        <div class="icon-frame"><span class="icon">⚡</span></div>
+        <div class="icon-frame"><span class="icon" aria-hidden="true">⚡</span></div>
         <div class="card-body">
           <h3>빠르다</h3>
           <p>고민 없이 바로 여는 화면, 3초 안에 오늘 갈 곳을 찾아요.</p>
         </div>
       </div>
       <div class="value-card reveal">
-        <div class="icon-frame"><span class="icon">🍃</span></div>
+        <div class="icon-frame"><span class="icon" aria-hidden="true">🍃</span></div>
         <div class="card-body">
           <h3>가볍다</h3>
           <p>불필요한 기능은 덜어내고, 꼭 필요한 흐름만 남겼어요.</p>
         </div>
       </div>
       <div class="value-card reveal">
-        <div class="icon-frame"><span class="icon">🤍</span></div>
+        <div class="icon-frame"><span class="icon" aria-hidden="true">🤍</span></div>
         <div class="card-body">
           <h3>편리하다</h3>
           <p>누구에게나 헷갈리지 않는, 쉽고 직관적인 사용성.</p>
@@ -445,7 +479,7 @@
     <div class="feature-grid">
       <div class="feature-card reveal">
         <span class="feature-badge is-live">이용 가능</span>
-        <div class="icon-frame"><span class="icon">🔍</span></div>
+        <div class="icon-frame"><span class="icon" aria-hidden="true">🔍</span></div>
         <div class="card-body">
           <h3>맛집 검색</h3>
           <p>키워드 하나로 원하는 맛집을 바로 찾아요.</p>
@@ -453,7 +487,7 @@
       </div>
       <div class="feature-card reveal">
         <span class="feature-badge">준비 중</span>
-        <div class="icon-frame"><span class="icon">🗺️</span></div>
+        <div class="icon-frame"><span class="icon" aria-hidden="true">🗺️</span></div>
         <div class="card-body">
           <h3>지도 기반 탐색</h3>
           <p>지도 위에서 주변 맛집을 한눈에 둘러봐요.</p>
@@ -461,7 +495,7 @@
       </div>
       <div class="feature-card reveal">
         <span class="feature-badge">준비 중</span>
-        <div class="icon-frame"><span class="icon">🎲</span></div>
+        <div class="icon-frame"><span class="icon" aria-hidden="true">🎲</span></div>
         <div class="card-body">
           <h3>오늘 뭐 먹지 룰렛</h3>
           <p>고민될 땐 조건 내 랜덤 추천으로 바로 결정.</p>
@@ -469,7 +503,7 @@
       </div>
       <div class="feature-card reveal">
         <span class="feature-badge is-live">이용 가능</span>
-        <div class="icon-frame"><span class="icon">✨</span></div>
+        <div class="icon-frame"><span class="icon" aria-hidden="true">✨</span></div>
         <div class="card-body">
           <h3>AI 리뷰 요약</h3>
           <p>구글 리뷰를 AI가 감정 분석·키워드·한줄 요약으로 정리해드려요.</p>
@@ -477,7 +511,7 @@
       </div>
       <div class="feature-card reveal">
         <span class="feature-badge is-live">이용 가능</span>
-        <div class="icon-frame"><span class="icon">⭐</span></div>
+        <div class="icon-frame"><span class="icon" aria-hidden="true">⭐</span></div>
         <div class="card-body">
           <h3>리뷰 · 평점</h3>
           <p>구글 리뷰의 별점과 실제 후기를 바로 확인해요.</p>
@@ -485,7 +519,7 @@
       </div>
       <div class="feature-card reveal">
         <span class="feature-badge">준비 중</span>
-        <div class="icon-frame"><span class="icon">📊</span></div>
+        <div class="icon-frame"><span class="icon" aria-hidden="true">📊</span></div>
         <div class="card-body">
           <h3>취향 대시보드</h3>
           <p>내 방문 기록을 한눈에 시각화해서 보여줘요.</p>
@@ -558,6 +592,7 @@
     var hour = new Date().getHours();
     var isLunch = hour >= 6 && hour < 17;
     document.documentElement.setAttribute('data-daypart', isLunch ? 'lunch' : 'dinner');
+    document.getElementById('themeColorMeta').setAttribute('content', isLunch ? '#E3A874' : '#7FAFC9');
   })();
 
   document.getElementById('navPocket').addEventListener('click', function(e){

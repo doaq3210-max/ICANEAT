@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>I can eat — 맛집주머니</title>
 <meta name="description" content="내가 담은 맛집을 모아 봅니다.">
+<meta name="theme-color" id="themeColorMeta" content="#E3A874">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://msmwnaksuegjgeutepcc.supabase.co">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍚</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="auth.css">
@@ -37,6 +40,11 @@
   }
 
   *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+  }
 
   body{
     margin:0;
@@ -80,6 +88,32 @@
     display:flex;
     align-items:center;
     gap:10px;
+  }
+
+  .sr-only{
+    position:absolute;
+    width:1px;height:1px;
+    padding:0;margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
+  .skip-link{
+    position:absolute;
+    top:-100px;
+    left:12px;
+    z-index:200;
+    padding:10px 16px;
+    border-radius:var(--radius-md);
+    background:var(--accent);
+    color:#fff;
+    font-weight:700;
+    text-decoration:none;
+    transition:top .18s ease;
+  }
+  .skip-link:focus{
+    top:12px;
   }
 
   /* ---------- 주요 기능 바로가기 (퀵링크 칩) ---------- */
@@ -130,6 +164,7 @@
     font-size:1.3rem;
     font-weight:800;
     letter-spacing:-0.02em;
+    text-wrap:balance;
   }
 
   .status-msg{
@@ -184,7 +219,7 @@
     border-radius:var(--radius-lg);
     background:var(--bg);
     box-shadow:var(--shadow-card);
-    transition:transform .22s ease, box-shadow .22s ease;
+    transition:transform .22s ease;
   }
   .pocket-card:hover{
     transform:translateY(-4px);
@@ -322,6 +357,7 @@
     max-width:420px;
     max-height:85vh;
     overflow-y:auto;
+    overscroll-behavior:contain;
     border:1px solid var(--neutral-border);
     border-radius:var(--radius-lg);
     background:var(--bg-alt);
@@ -489,6 +525,8 @@
 </head>
 <body>
 
+<a class="skip-link" href="#main-content">본문으로 바로가기</a>
+
 <header class="site">
   <div class="wrap">
     <a class="logo" href="index.html">I can <span>eat</span></a>
@@ -501,24 +539,24 @@
 <nav class="quick-nav-wrap" aria-label="주요 기능 바로가기">
   <div class="quick-nav">
     <a class="quick-nav-item" href="index.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg>
       홈
     </a>
     <a class="quick-nav-item" href="restaurants.html">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       검색
     </a>
     <a class="quick-nav-item is-active" href="mypage.html" id="navPocket">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l1 12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l1 12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
       맛집주머니
     </a>
   </div>
 </nav>
 
-<main class="wrap">
+<main class="wrap" id="main-content">
   <section class="pocket-section">
     <h1 class="pocket-heading">내가 담은 맛집</h1>
-    <p class="status-msg" id="statusMsg" hidden></p>
+    <p class="status-msg" id="statusMsg" role="status" aria-live="polite" hidden></p>
     <div class="pocket-empty" id="pocketEmpty" hidden>
       <p>아직 담은 맛집이 없어요. 검색하러 가볼까요?</p>
       <a class="pocket-empty-btn" href="index.html#search">검색하러 가기</a>
@@ -553,11 +591,11 @@
       <button type="button" class="record-rating-btn" data-rating="글쎄요">글쎄요 🫤</button>
     </div>
 
-    <span class="record-panel-label">한줄평</span>
+    <label class="record-panel-label" for="recordReviewInput">한줄평</label>
     <textarea class="record-review-input" id="recordReviewInput" maxlength="200" placeholder="이곳에 대한 한줄평을 남겨보세요"></textarea>
 
     <button type="button" class="record-save-btn" id="recordSaveBtn">저장</button>
-    <p class="record-save-status" id="recordSaveStatus"></p>
+    <p class="record-save-status" id="recordSaveStatus" role="status" aria-live="polite"></p>
   </div>
 </div>
 
@@ -585,6 +623,7 @@
   var hour = new Date().getHours();
   var daypart = (hour >= 6 && hour < 17) ? 'lunch' : 'dinner';
   document.documentElement.setAttribute('data-daypart', daypart);
+  document.getElementById('themeColorMeta').setAttribute('content', daypart === 'lunch' ? '#E3A874' : '#7FAFC9');
 })();
 
 document.getElementById('navPocket').addEventListener('click', function(e){
@@ -638,12 +677,12 @@ document.getElementById('navPocket').addEventListener('click', function(e){
     visitedEmpty.hidden = visitedCount > 0;
   }
 
+  var dateFormatter = new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
   function formatDate(iso){
     var d = new Date(iso);
     if (isNaN(d.getTime())) return '';
-    var mm = String(d.getMonth() + 1).padStart(2, '0');
-    var dd = String(d.getDate()).padStart(2, '0');
-    return d.getFullYear() + '.' + mm + '.' + dd + ' 담음';
+    var parts = dateFormatter.formatToParts(d).reduce(function(acc, p){ acc[p.type] = p.value; return acc; }, {});
+    return parts.year + '.' + parts.month + '.' + parts.day + ' 담음';
   }
 
   function buildGoogleMapsUrl(row){
@@ -744,7 +783,7 @@ document.getElementById('navPocket').addEventListener('click', function(e){
     var reviewText = document.createElement('p');
     reviewText.className = 'pocket-card-review';
     reviewText.hidden = !row.review_text;
-    reviewText.textContent = row.review_text ? ('"' + row.review_text + '"') : '';
+    reviewText.textContent = row.review_text ? ('“' + row.review_text + '”') : '';
     card.appendChild(reviewText);
 
     // 리뷰 모달에서 저장한 뒤 카드 전체를 다시 그리지 않고 이 두 엘리먼트만 갱신한다.

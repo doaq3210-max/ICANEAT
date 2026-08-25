@@ -13,7 +13,7 @@
   border-radius:var(--radius-lg);
   background:var(--bg);
   box-shadow:var(--shadow-card);
-  transition:transform .22s ease, box-shadow .22s ease;
+  transition:transform .22s ease;
 }
 .rest-card:hover{
   transform:translateY(-4px);
@@ -35,6 +35,7 @@
   font-size:1.02rem;
   font-weight:700;
   letter-spacing:-0.01em;
+  text-wrap:balance;
 }
 .rest-card-distance{
   flex-shrink:0;
@@ -126,6 +127,7 @@
   max-width:560px;
   max-height:85vh;
   overflow-y:auto;
+  overscroll-behavior:contain;
   border:1px solid var(--neutral-border);
   border-radius:var(--radius-lg);
   background:var(--bg-alt);
@@ -140,12 +142,15 @@
   justify-content:space-between;
   gap:16px;
   margin-bottom:12px;
+  min-width:0;
 }
 .review-panel-name{
   margin:0;
   font-size:1.05rem;
   font-weight:700;
   letter-spacing:-0.01em;
+  min-width:0;
+  overflow-wrap:break-word;
 }
 .review-panel-close{
   flex:none;

@@ -70,11 +70,14 @@
 카카오/구글/제미나이 API는 모두 서버사이드 호출 전제(REST 키 노출 방지, CORS)라 브라우저에서 직접 호출하지 않고 Vercel 서버리스 함수를 거칩니다:
 
 - `api/kakao-search.js` — 카카오 로컬 API 프록시 (`GET /api/kakao-search`, 기존 `proxy-server.js` 대체). `KAKAO_REST_API_KEY` 환경변수 사용.
-- `api/google-reviews.js` — 가게 이름+좌표로 Places API (New) `searchText`를 호출해 150m 이내 최적 매칭 1건의 별점/리뷰를 정리해서 반환 (`GET /api/google-reviews?name=&lat=&lng=`). `GOOGLE_PLACES_API_KEY` 환경변수 사용. `locationBias`는 반경을 강제하지 않으므로 응답 후 서버에서 haversine 거리로 150m 초과 후보를 제외한다.
+- `api/google-reviews.js` — 가게 이름+좌표로 Places API (New) `searchText`를 호출해 150m 이내 최적 매칭 1건의 별점/리뷰/사진 리소스 이름(`photo.name`, 있으면)을 정리해서 반환 (`GET /api/google-reviews?name=&lat=&lng=`). `GOOGLE_PLACES_API_KEY` 환경변수 사용. `locationBias`는 반경을 강제하지 않으므로 응답 후 서버에서 haversine 거리로 150m 초과 후보를 제외한다.
+- `api/google-photo.js` — `api/google-reviews.js`가 돌려준 사진 리소스 이름(`places/{placeId}/photos/{photoId}` 형식)을 받아 Places Photo Media 엔드포인트를 `skipHttpRedirect=true`로 호출해 임시 `photoUri`를 반환 (`GET /api/google-photo?name=&maxWidthPx=`). `GOOGLE_PLACES_API_KEY` 환경변수 사용. `name`이 정확히 `places/…/photos/…` 형식인지 정규식으로 검증한 뒤에만 구글 API로 전달한다 — 서버가 임의 경로를 그대로 프록시하는 SSRF 통로가 되지 않도록 하기 위함이니, 이 검증을 느슨하게 풀지 말 것.
 - `api/ai-analyze.js` — 구글 리뷰 텍스트를 Gemini(`gemini-3.6-flash`, structured output)에 보내 감정 분류 집계·핵심 키워드·한 줄 요약을 받아온다 (`POST /api/ai-analyze`, body `{name, reviews}`). `GEMINI_API_KEY` 환경변수 사용. 리뷰가 0개인 가게는 프론트에서 아예 호출하지 않는다.
-- `api/_utils.js` — 세 함수가 공유하는 CORS/JSON 응답 헬퍼 (파일명이 `_`로 시작해 Vercel이 라우팅하지 않음).
+- `api/_utils.js` — 네 함수가 공유하는 CORS/JSON 응답 헬퍼 (파일명이 `_`로 시작해 Vercel이 라우팅하지 않음).
 
 세 REST API 키 모두 코드에 하드코딩하지 않고 환경변수로만 읽습니다.
+
+**인기 랭킹 카드 사진 (`index.html` `#ranking`, 1~5위 전체)**: `restaurant-card.js`의 `window.icaneatCard.loadThumbnail(card, imgEl, wrapEl)`가 담당한다. `renderCard()`가 만드는 기본 카드에는 사진이 없고 — `restaurants.html` 검색 결과 카드/맞춤 추천 카드에는 이 기능이 적용되지 않는다 — `index.html`의 `renderRanking()`이 카드 맨 앞에 `.rest-card-thumb`(16:9, 카드 padding을 상쇄하는 음수 margin으로 상단 엣지까지 채움) wrapper를 직접 끼워 넣고 `loadThumbnail()`을 호출해 채운다. `loadThumbnail()`은 리뷰와 동일한 캐시 키(`icaneat:reviews:` 접두사)를 공유하므로, 캐시가 없으면 `/api/google-reviews`를 호출해 리뷰+사진 리소스 이름을 함께 받아와 캐시해두고(이후 그 카드를 클릭해 리뷰 모달을 열어도 캐시를 그대로 써서 API를 다시 부르지 않는다), 사진 리소스 이름이 있으면 `/api/google-photo`로 매번 새 `photoUri`를 받아 `<img>`에 꽂는다 — `photoUri`는 구글이 발급하는 임시 URL이라 캐시하지 않고, 영구적인 사진 리소스 이름만 캐시한다. 사진이 없는 가게는 `.rest-card-thumb`를 계속 `hidden` 상태로 두어 기존 텍스트 전용 레이아웃으로 자연스럽게 폴백한다.
 
 **로컬 실행**: `.env.example`을 `.env`로 복사해 `KAKAO_REST_API_KEY`, `GOOGLE_PLACES_API_KEY`, `GEMINI_API_KEY`를 채운 뒤 `npx vercel dev`를 실행합니다. 정적 파일과 `/api` 함수를 동일 코드로 로컬 서빙하므로, 안내되는 포트(보통 `http://localhost:3000`)에서 `restaurants.html`을 엽니다. (기존 `proxy-server.js` + `npx serve` 이원화 방식은 폐기되었습니다.)
 

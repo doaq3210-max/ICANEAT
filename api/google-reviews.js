@@ -14,7 +14,7 @@ const { setCors, sendJson, handlePreflight, haversineMeters } = require('./_util
 const SEARCH_TEXT_URL = 'https://places.googleapis.com/v1/places:searchText';
 const MATCH_RADIUS_M = 150;
 const FIELD_MASK =
-  'places.id,places.displayName,places.rating,places.userRatingCount,places.reviews,places.googleMapsUri,places.location';
+  'places.id,places.displayName,places.rating,places.userRatingCount,places.reviews,places.googleMapsUri,places.location,places.photos';
 
 module.exports = async (req, res) => {
   setCors(res);
@@ -105,6 +105,8 @@ module.exports = async (req, res) => {
     text: (r.text && r.text.text) || (r.originalText && r.originalText.text) || '',
   }));
 
+  const firstPhoto = Array.isArray(best.photos) && best.photos.length > 0 ? best.photos[0] : null;
+
   sendJson(res, 200, {
     found: true,
     placeId: best.id || '',
@@ -113,5 +115,6 @@ module.exports = async (req, res) => {
     userRatingCount: typeof best.userRatingCount === 'number' ? best.userRatingCount : 0,
     reviews,
     mapsUri: best.googleMapsUri || '',
+    photo: firstPhoto ? { name: firstPhoto.name } : null,
   });
 };

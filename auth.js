@@ -117,6 +117,9 @@
   var errorEl = document.createElement('p');
   errorEl.className = 'auth-error';
   errorEl.hidden = true;
+  errorEl.tabIndex = -1;
+  errorEl.setAttribute('role', 'alert');
+  errorEl.setAttribute('aria-live', 'assertive');
   modal.appendChild(errorEl);
 
   var form = document.createElement('form');
@@ -172,6 +175,7 @@
   function showError(message) {
     errorEl.textContent = message;
     errorEl.hidden = false;
+    errorEl.focus();
   }
 
   function hideError() {
@@ -182,8 +186,8 @@
   function setBusy(isBusy) {
     loginSubmitBtn.disabled = isBusy;
     signupBtn.disabled = isBusy;
-    loginSubmitBtn.textContent = isBusy ? '처리 중...' : '로그인';
-    signupBtn.textContent = isBusy ? '처리 중...' : '회원가입';
+    loginSubmitBtn.textContent = isBusy ? '처리 중…' : '로그인';
+    signupBtn.textContent = isBusy ? '처리 중…' : '회원가입';
   }
 
   function openModal() {

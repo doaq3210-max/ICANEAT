@@ -11,6 +11,7 @@ window.icaneatCard = (function () {
   'use strict';
 
   var REVIEWS_BASE = '/api/google-reviews';
+  var PHOTO_BASE = '/api/google-photo';
   var AI_ANALYZE_BASE = '/api/ai-analyze';
   var REVIEW_CACHE_PREFIX = 'icaneat:reviews:';
   var AI_CACHE_PREFIX = 'icaneat:ai:';
@@ -227,7 +228,7 @@ window.icaneatCard = (function () {
     reviewPanelBody.appendChild(buildPanelHeader(name));
     var status = document.createElement('p');
     status.className = 'review-panel-status';
-    status.textContent = '리뷰를 불러오는 중...';
+    status.textContent = '리뷰를 불러오는 중…';
     reviewPanelBody.appendChild(status);
   }
 
@@ -256,7 +257,7 @@ window.icaneatCard = (function () {
     var ratingP = document.createElement('p');
     ratingP.className = 'review-panel-rating';
     ratingP.textContent = (data.rating != null)
-      ? '⭐ ' + data.rating.toFixed(1) + ' (' + (data.userRatingCount || 0) + '개 리뷰)'
+      ? '⭐ ' + data.rating.toFixed(1) + ' (' + new Intl.NumberFormat('ko-KR').format(data.userRatingCount || 0) + '개 리뷰)'
       : '평점 정보 없음';
     reviewPanelBody.appendChild(ratingP);
 
@@ -352,7 +353,7 @@ window.icaneatCard = (function () {
     refs.body.innerHTML = '';
     var status = document.createElement('p');
     status.className = 'review-panel-status';
-    status.textContent = 'AI가 분석하는 중...';
+    status.textContent = 'AI가 분석하는 중…';
     refs.body.appendChild(status);
   }
 
@@ -662,10 +663,53 @@ window.icaneatCard = (function () {
     applySavedStateToAllCards();
   }
 
+  // ---------- 인기 랭킹 카드 썸네일 (구글 사진, index.html 전용 사용) ----------
+  // 리뷰와 같은 캐시(REVIEW_CACHE_PREFIX)를 공유해 리뷰 패널을 나중에 열어도
+  // 별도 API 호출 없이 같은 데이터를 재사용한다.
+
+  function applyThumbnailPhoto(photo, imgEl, wrapEl) {
+    if (!photo || !photo.name) return;
+    var params = new URLSearchParams();
+    params.set('name', photo.name);
+    params.set('maxWidthPx', '480');
+    fetch(PHOTO_BASE + '?' + params.toString())
+      .then(function (res) { return res.json(); })
+      .then(function (res) {
+        if (!res.photoUri) return;
+        imgEl.src = res.photoUri;
+        wrapEl.hidden = false;
+      })
+      .catch(function () {});
+  }
+
+  function loadThumbnail(card, imgEl, wrapEl) {
+    var key = reviewCacheKey(card);
+    var cached = getCachedReview(key);
+    if (cached) {
+      if (cached.found) applyThumbnailPhoto(cached.photo, imgEl, wrapEl);
+      return;
+    }
+
+    var params = new URLSearchParams();
+    params.set('name', card.dataset.placeName);
+    params.set('lat', card.dataset.lat);
+    params.set('lng', card.dataset.lng);
+
+    fetch(REVIEWS_BASE + '?' + params.toString())
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.error) throw new Error(data.error);
+        setCachedReview(key, data);
+        if (data.found) applyThumbnailPhoto(data.photo, imgEl, wrapEl);
+      })
+      .catch(function () {});
+  }
+
   return {
     renderCard: renderCard,
     formatDistance: formatDistance,
     mount: mount,
     closePanel: closePanel,
+    loadThumbnail: loadThumbnail,
   };
 })();
