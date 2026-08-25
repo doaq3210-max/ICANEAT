@@ -399,6 +399,61 @@
     font-size:0.85rem;
     color:var(--text-soft);
   }
+  .record-panel-photos{
+    margin:0 0 18px;
+  }
+  .record-panel-photos-inner{
+    position:relative;
+    aspect-ratio:16/9;
+    border-radius:var(--radius-md);
+    overflow:hidden;
+    background:var(--neutral);
+  }
+  .record-panel-photos-track{
+    display:flex;
+    height:100%;
+    transition:transform .3s ease;
+  }
+  .record-panel-photos-track img{
+    flex:0 0 100%;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .record-panel-photos-arrow{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:32px;height:32px;
+    border-radius:50%;
+    border:none;
+    background:rgba(255,255,255,0.85);
+    color:var(--text);
+    font-size:1.2rem;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    box-shadow:0 1px 4px rgba(0,0,0,0.15);
+  }
+  .record-panel-photos-arrow:hover{
+    background:#fff;
+  }
+  .record-panel-photos-arrow--prev{ left:10px; }
+  .record-panel-photos-arrow--next{ right:10px; }
+  .record-panel-photos-counter{
+    position:absolute;
+    right:10px;
+    bottom:10px;
+    padding:2px 9px;
+    border-radius:999px;
+    background:rgba(0,0,0,0.55);
+    color:#fff;
+    font-size:0.72rem;
+    font-weight:600;
+  }
   .record-panel-label{
     display:block;
     margin:0 0 8px;
@@ -584,6 +639,8 @@
       <button type="button" class="record-panel-close" id="recordCloseBtn" aria-label="내 기록 닫기">×</button>
     </div>
     <p class="record-panel-meta" id="recordMeta"></p>
+
+    <div class="record-panel-photos" id="recordPhotos" hidden></div>
 
     <span class="record-panel-label">평가</span>
     <div class="record-rating-group" id="recordRatingGroup">
@@ -878,6 +935,7 @@ document.getElementById('navPocket').addEventListener('click', function(e){
   var recordModalOverlay = document.getElementById('recordModalOverlay');
   var recordName = document.getElementById('recordName');
   var recordMeta = document.getElementById('recordMeta');
+  var recordPhotos = document.getElementById('recordPhotos');
   var recordRatingGroup = document.getElementById('recordRatingGroup');
   var recordReviewInput = document.getElementById('recordReviewInput');
   var recordSaveBtn = document.getElementById('recordSaveBtn');
@@ -888,6 +946,156 @@ document.getElementById('navPocket').addEventListener('click', function(e){
   var activeRecordCard = null;
   var activeRecordSupa = null;
   var pendingRating = null;
+
+  // ---------- 내 기록 모달 사진 캐러셀 ----------
+  // index.html/restaurants.html(restaurant-card.js)과 같은 API·캐시 키를 사용해
+  // 같은 가게라면 다른 페이지에서 이미 받아온 데이터를 재사용한다.
+  var REVIEWS_BASE = '/api/google-reviews';
+  var PHOTO_BASE = '/api/google-photo';
+  var REVIEW_CACHE_PREFIX = 'icaneat:reviews:v2:';
+
+  function reviewCacheKeyForRow(row){
+    if (row.place_id) return REVIEW_CACHE_PREFIX + 'id:' + row.place_id;
+    var lat = parseFloat(row.lat);
+    var lng = parseFloat(row.lng);
+    return REVIEW_CACHE_PREFIX + encodeURIComponent(row.place_name) + ':' + lat.toFixed(4) + ',' + lng.toFixed(4);
+  }
+
+  function getCachedReview(key){
+    try {
+      var raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function setCachedReview(key, data){
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch (e) {
+      // 저장 공간 부족, 프라이빗 모드 등 — 캐시 없이 조용히 진행.
+    }
+  }
+
+  function fetchPhotoUri(photoName, maxWidthPx){
+    var params = new URLSearchParams();
+    params.set('name', photoName);
+    params.set('maxWidthPx', String(maxWidthPx || 640));
+    return fetch(PHOTO_BASE + '?' + params.toString())
+      .then(function (res) { return res.json(); })
+      .then(function (res) { return res.photoUri || null; })
+      .catch(function () { return null; });
+  }
+
+  function clearRecordPhotos(){
+    recordPhotos.hidden = true;
+    recordPhotos.innerHTML = '';
+  }
+
+  function buildRecordPhotoCarousel(photoUris){
+    var wrap = document.createElement('div');
+    wrap.className = 'record-panel-photos-inner';
+
+    var track = document.createElement('div');
+    track.className = 'record-panel-photos-track';
+    photoUris.forEach(function (uri) {
+      var img = document.createElement('img');
+      img.src = uri;
+      img.alt = '';
+      track.appendChild(img);
+    });
+    wrap.appendChild(track);
+
+    var index = 0;
+    var counter = null;
+
+    function update(){
+      track.style.transform = 'translateX(-' + index * 100 + '%)';
+      if (counter) counter.textContent = (index + 1) + '/' + photoUris.length;
+    }
+
+    function goTo(newIndex){
+      index = (newIndex + photoUris.length) % photoUris.length;
+      update();
+    }
+
+    if (photoUris.length > 1) {
+      var prevBtn = document.createElement('button');
+      prevBtn.type = 'button';
+      prevBtn.className = 'record-panel-photos-arrow record-panel-photos-arrow--prev';
+      prevBtn.setAttribute('aria-label', '이전 사진');
+      prevBtn.textContent = '‹';
+      prevBtn.addEventListener('click', function () { goTo(index - 1); });
+
+      var nextBtn = document.createElement('button');
+      nextBtn.type = 'button';
+      nextBtn.className = 'record-panel-photos-arrow record-panel-photos-arrow--next';
+      nextBtn.setAttribute('aria-label', '다음 사진');
+      nextBtn.textContent = '›';
+      nextBtn.addEventListener('click', function () { goTo(index + 1); });
+
+      wrap.appendChild(prevBtn);
+      wrap.appendChild(nextBtn);
+
+      counter = document.createElement('span');
+      counter.className = 'record-panel-photos-counter';
+      wrap.appendChild(counter);
+
+      var touchStartX = null;
+      wrap.addEventListener('touchstart', function (e) {
+        touchStartX = e.touches[0].clientX;
+      }, { passive: true });
+      wrap.addEventListener('touchend', function (e) {
+        if (touchStartX == null) return;
+        var dx = e.changedTouches[0].clientX - touchStartX;
+        touchStartX = null;
+        if (Math.abs(dx) < 40) return;
+        goTo(dx < 0 ? index + 1 : index - 1);
+      }, { passive: true });
+    }
+
+    update();
+    recordPhotos.innerHTML = '';
+    recordPhotos.appendChild(wrap);
+    recordPhotos.hidden = false;
+  }
+
+  function applyRecordPhotos(row, photos){
+    if (activeRecordRow !== row) return;
+    if (!photos || photos.length === 0) return;
+    Promise.all(photos.map(function (p) { return fetchPhotoUri(p.name, 640); }))
+      .then(function (uris) {
+        if (activeRecordRow !== row) return;
+        var valid = uris.filter(Boolean);
+        if (valid.length === 0) return;
+        buildRecordPhotoCarousel(valid);
+      });
+  }
+
+  function loadRecordPhotos(row){
+    clearRecordPhotos();
+    var key = reviewCacheKeyForRow(row);
+    var cached = getCachedReview(key);
+    if (cached) {
+      applyRecordPhotos(row, cached.found ? cached.photos : null);
+      return;
+    }
+
+    var params = new URLSearchParams();
+    params.set('name', row.place_name || '');
+    params.set('lat', row.lat);
+    params.set('lng', row.lng);
+
+    fetch(REVIEWS_BASE + '?' + params.toString())
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.error) throw new Error(data.error);
+        setCachedReview(key, data);
+        applyRecordPhotos(row, data.found ? data.photos : null);
+      })
+      .catch(function () {});
+  }
 
   function isRecordOpen(){
     return recordModalOverlay.classList.contains('open');
@@ -910,6 +1118,7 @@ document.getElementById('navPocket').addEventListener('click', function(e){
     recordReviewInput.value = row.review_text || '';
     recordSaveStatus.textContent = '';
     updateRatingButtons();
+    loadRecordPhotos(row);
 
     recordModalOverlay.classList.add('open');
     document.body.style.overflow = 'hidden';
