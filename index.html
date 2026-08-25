@@ -513,6 +513,20 @@
       return el;
     }
 
+    // 카드 맨 앞에 구글 사진 썸네일(대표이미지) wrapper를 끼워 넣고 비동기로 채운다.
+    // 인기 랭킹/맞춤 추천 카드가 공통으로 사용.
+    function attachCardThumbnail(card){
+      var thumbWrap = document.createElement('div');
+      thumbWrap.className = 'rest-card-thumb';
+      thumbWrap.hidden = true;
+      var thumbImg = document.createElement('img');
+      thumbImg.alt = '';
+      thumbImg.loading = 'lazy';
+      thumbWrap.appendChild(thumbImg);
+      card.insertBefore(thumbWrap, card.firstChild);
+      window.icaneatCard.loadThumbnail(card, thumbImg, thumbWrap);
+    }
+
     // get_popular_restaurants RPC row(place_id, place_name, category_name, address, lat, lng, save_count)를
     // restaurant-card.js의 renderCard()가 기대하는 카카오 doc 형태로 맞춰준다.
     function rankingRowToDoc(row){
@@ -557,15 +571,7 @@
 
         appendText(card, 'p', 'mini-card-count', (row.save_count || 0) + '명이 담았어요');
 
-        var thumbWrap = document.createElement('div');
-        thumbWrap.className = 'rest-card-thumb';
-        thumbWrap.hidden = true;
-        var thumbImg = document.createElement('img');
-        thumbImg.alt = '';
-        thumbImg.loading = 'lazy';
-        thumbWrap.appendChild(thumbImg);
-        card.insertBefore(thumbWrap, card.firstChild);
-        window.icaneatCard.loadThumbnail(card, thumbImg, thumbWrap);
+        attachCardThumbnail(card);
 
         rankingGrid.appendChild(card);
       });
@@ -612,7 +618,9 @@
       recoGrid.innerHTML = '';
       recoStatus.hidden = true;
       docs.forEach(function(doc){
-        recoGrid.appendChild(window.icaneatCard.renderCard(doc));
+        var card = window.icaneatCard.renderCard(doc);
+        attachCardThumbnail(card);
+        recoGrid.appendChild(card);
       });
     }
 

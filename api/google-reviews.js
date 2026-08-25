@@ -105,7 +105,9 @@ module.exports = async (req, res) => {
     text: (r.text && r.text.text) || (r.originalText && r.originalText.text) || '',
   }));
 
-  const firstPhoto = Array.isArray(best.photos) && best.photos.length > 0 ? best.photos[0] : null;
+  const photos = (Array.isArray(best.photos) ? best.photos : [])
+    .slice(0, 3)
+    .map((p) => ({ name: p.name }));
 
   sendJson(res, 200, {
     found: true,
@@ -115,6 +117,6 @@ module.exports = async (req, res) => {
     userRatingCount: typeof best.userRatingCount === 'number' ? best.userRatingCount : 0,
     reviews,
     mapsUri: best.googleMapsUri || '',
-    photo: firstPhoto ? { name: firstPhoto.name } : null,
+    photos,
   });
 };

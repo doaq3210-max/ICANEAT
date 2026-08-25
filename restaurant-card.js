@@ -261,6 +261,17 @@ window.icaneatCard = (function () {
       : '평점 정보 없음';
     reviewPanelBody.appendChild(ratingP);
 
+    var photos = data.photos || [];
+    if (photos.length > 0) {
+      Promise.all(photos.map(function (p) { return fetchPhotoUri(p.name, 640); }))
+        .then(function (uris) {
+          if (activeReviewCard !== card) return;
+          var valid = uris.filter(Boolean);
+          if (valid.length === 0) return;
+          reviewPanelBody.insertBefore(buildPhotoCarousel(valid), ratingP.nextSibling);
+        });
+    }
+
     var list = document.createElement('ul');
     list.className = 'review-list';
 
@@ -667,26 +678,31 @@ window.icaneatCard = (function () {
   // 리뷰와 같은 캐시(REVIEW_CACHE_PREFIX)를 공유해 리뷰 패널을 나중에 열어도
   // 별도 API 호출 없이 같은 데이터를 재사용한다.
 
-  function applyThumbnailPhoto(photo, imgEl, wrapEl) {
-    if (!photo || !photo.name) return;
+  function fetchPhotoUri(photoName, maxWidthPx) {
     var params = new URLSearchParams();
-    params.set('name', photo.name);
-    params.set('maxWidthPx', '480');
-    fetch(PHOTO_BASE + '?' + params.toString())
+    params.set('name', photoName);
+    params.set('maxWidthPx', String(maxWidthPx || 480));
+    return fetch(PHOTO_BASE + '?' + params.toString())
       .then(function (res) { return res.json(); })
-      .then(function (res) {
-        if (!res.photoUri) return;
-        imgEl.src = res.photoUri;
-        wrapEl.hidden = false;
-      })
-      .catch(function () {});
+      .then(function (res) { return res.photoUri || null; })
+      .catch(function () { return null; });
+  }
+
+  function applyThumbnailPhoto(photos, imgEl, wrapEl) {
+    var first = Array.isArray(photos) && photos.length > 0 ? photos[0] : null;
+    if (!first || !first.name) return;
+    fetchPhotoUri(first.name, 480).then(function (photoUri) {
+      if (!photoUri) return;
+      imgEl.src = photoUri;
+      wrapEl.hidden = false;
+    });
   }
 
   function loadThumbnail(card, imgEl, wrapEl) {
     var key = reviewCacheKey(card);
     var cached = getCachedReview(key);
     if (cached) {
-      if (cached.found) applyThumbnailPhoto(cached.photo, imgEl, wrapEl);
+      if (cached.found) applyThumbnailPhoto(cached.photos, imgEl, wrapEl);
       return;
     }
 
@@ -700,9 +716,77 @@ window.icaneatCard = (function () {
       .then(function (data) {
         if (data.error) throw new Error(data.error);
         setCachedReview(key, data);
-        if (data.found) applyThumbnailPhoto(data.photo, imgEl, wrapEl);
+        if (data.found) applyThumbnailPhoto(data.photos, imgEl, wrapEl);
       })
       .catch(function () {});
+  }
+
+  // ---------- 리뷰 모달 사진 캐러셀 (최대 3장, 화살표/스와이프 네비게이션) ----------
+
+  function buildPhotoCarousel(photoUris) {
+    var wrap = document.createElement('div');
+    wrap.className = 'review-panel-photos';
+
+    var track = document.createElement('div');
+    track.className = 'review-panel-photos-track';
+    photoUris.forEach(function (uri) {
+      var img = document.createElement('img');
+      img.src = uri;
+      img.alt = '';
+      track.appendChild(img);
+    });
+    wrap.appendChild(track);
+
+    var index = 0;
+    var counter = null;
+
+    function update() {
+      track.style.transform = 'translateX(-' + index * 100 + '%)';
+      if (counter) counter.textContent = (index + 1) + '/' + photoUris.length;
+    }
+
+    function goTo(newIndex) {
+      index = (newIndex + photoUris.length) % photoUris.length;
+      update();
+    }
+
+    if (photoUris.length > 1) {
+      var prevBtn = document.createElement('button');
+      prevBtn.type = 'button';
+      prevBtn.className = 'review-panel-photos-arrow review-panel-photos-arrow--prev';
+      prevBtn.setAttribute('aria-label', '이전 사진');
+      prevBtn.textContent = '‹';
+      prevBtn.addEventListener('click', function () { goTo(index - 1); });
+
+      var nextBtn = document.createElement('button');
+      nextBtn.type = 'button';
+      nextBtn.className = 'review-panel-photos-arrow review-panel-photos-arrow--next';
+      nextBtn.setAttribute('aria-label', '다음 사진');
+      nextBtn.textContent = '›';
+      nextBtn.addEventListener('click', function () { goTo(index + 1); });
+
+      wrap.appendChild(prevBtn);
+      wrap.appendChild(nextBtn);
+
+      counter = document.createElement('span');
+      counter.className = 'review-panel-photos-counter';
+      wrap.appendChild(counter);
+
+      var touchStartX = null;
+      wrap.addEventListener('touchstart', function (e) {
+        touchStartX = e.touches[0].clientX;
+      }, { passive: true });
+      wrap.addEventListener('touchend', function (e) {
+        if (touchStartX == null) return;
+        var dx = e.changedTouches[0].clientX - touchStartX;
+        touchStartX = null;
+        if (Math.abs(dx) < 40) return;
+        goTo(dx < 0 ? index + 1 : index - 1);
+      }, { passive: true });
+    }
+
+    update();
+    return wrap;
   }
 
   return {
