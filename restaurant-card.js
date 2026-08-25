@@ -13,7 +13,9 @@ window.icaneatCard = (function () {
   var REVIEWS_BASE = '/api/google-reviews';
   var PHOTO_BASE = '/api/google-photo';
   var AI_ANALYZE_BASE = '/api/ai-analyze';
-  var REVIEW_CACHE_PREFIX = 'icaneat:reviews:';
+  // v2: 응답에 photos 배열(구글 사진, 최대 3장)이 추가되며 캐시 스키마가 바뀜 —
+  // 접두사를 올려서 이전 스키마(photo 단수)로 저장된 캐시를 자동으로 무시하고 새로 받아오게 한다.
+  var REVIEW_CACHE_PREFIX = 'icaneat:reviews:v2:';
   var AI_CACHE_PREFIX = 'icaneat:ai:';
   var REVIEW_TEXT_TRUNCATE_LEN = 130;
 
