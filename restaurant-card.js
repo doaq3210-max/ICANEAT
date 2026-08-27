@@ -622,6 +622,13 @@ window.icaneatCard = (function () {
         savedPlaceIds.add(placeId);
       }
       setSaveBtnState(saveBtn, !isSaved);
+
+      if (window.gtag) {
+        window.gtag('event', isSaved ? 'remove_from_wishlist' : 'add_to_wishlist', {
+          place_id: placeId,
+          place_name: card.dataset.placeName,
+        });
+      }
     });
   }
 
@@ -643,7 +650,14 @@ window.icaneatCard = (function () {
       e.preventDefault();
       e.stopPropagation();
 
-      toggleSave(saveBtn, saveBtn.closest('.rest-card'));
+      var card = saveBtn.closest('.rest-card');
+      if (window.gtag) {
+        window.gtag('event', 'save_button_click', {
+          place_id: card.dataset.placeId,
+          place_name: card.dataset.placeName,
+        });
+      }
+      toggleSave(saveBtn, card);
     });
 
     // 카드 클릭: 구글 리뷰 패널을 열고 채운다. "담기"/카카오맵 링크 클릭은

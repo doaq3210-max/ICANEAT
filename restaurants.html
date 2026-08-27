@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZH3GWWYZ7D"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ZH3GWWYZ7D');
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>I can eat — 맛집 검색</title>
@@ -726,6 +734,9 @@
 
   searchForm.addEventListener('submit', function (e) {
     e.preventDefault();
+    if (window.gtag) {
+      window.gtag('event', 'search', { search_term: searchInput.value.trim() });
+    }
     runSearch(1, false);
   });
 

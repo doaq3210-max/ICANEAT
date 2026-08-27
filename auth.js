@@ -75,6 +75,7 @@
         logoutBtn.className = 'auth-logout-btn';
         logoutBtn.textContent = '로그아웃';
         logoutBtn.addEventListener('click', function () {
+          if (window.gtag) window.gtag('event', 'logout_click');
           client.auth.signOut();
         });
         status.appendChild(logoutBtn);
@@ -85,7 +86,10 @@
         loginBtn.type = 'button';
         loginBtn.className = 'auth-login-btn';
         loginBtn.textContent = '로그인';
-        loginBtn.addEventListener('click', openModal);
+        loginBtn.addEventListener('click', function () {
+          if (window.gtag) window.gtag('event', 'login_click');
+          openModal();
+        });
         slot.appendChild(loginBtn);
       }
     });
@@ -227,11 +231,13 @@
           showError(translateError(res.error.message));
           return;
         }
+        if (window.gtag) window.gtag('event', 'login', { method: 'email' });
         closeModal();
       });
   });
 
   signupBtn.addEventListener('click', function () {
+    if (window.gtag) window.gtag('event', 'signup_click');
     hideError();
     var email = emailInput.value.trim();
     var password = passwordInput.value;
@@ -246,6 +252,7 @@
         return;
       }
       if (res.data.session) {
+        if (window.gtag) window.gtag('event', 'sign_up', { method: 'email' });
         closeModal();
       } else {
         showError('이메일 인증이 필요해요. 관리자에게 문의해주세요.');

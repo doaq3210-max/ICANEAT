@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZH3GWWYZ7D"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-ZH3GWWYZ7D');
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>I can eat — 가볍고 빠르게, 오늘 뭐 먹지</title>
@@ -705,6 +713,7 @@
   searchForm.addEventListener('submit', function(e){
     e.preventDefault();
     var value = searchInput.value.trim();
+    if (window.gtag) window.gtag('event', 'search', { search_term: value });
     var url = value ? 'restaurants.html?q=' + encodeURIComponent(value) : 'restaurants.html';
     window.location.href = url;
   });
